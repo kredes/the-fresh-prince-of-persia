@@ -1,8 +1,8 @@
 TILEMAP
 10 3							-- Size of tile map in tiles
-64 128 128 128							-- Tile size & block size
-sprites/tiles/dungeon-dos.png 	-- Tilesheet
-11 9								-- Number of tiles in tilesheet
-          
-          
+64 126 114 126							-- Tile size & block size
+sprites/tiles/dummy2.png 	-- Tilesheet
+1 1								-- Number of tiles in tilesheet
+0000000000
+0000000000
 1111111111
