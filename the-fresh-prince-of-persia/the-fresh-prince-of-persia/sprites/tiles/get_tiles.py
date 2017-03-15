@@ -1,4 +1,5 @@
 from PIL import Image, ImageFilter
+import os
 import sys
 
 class TileExtractor(object):
@@ -12,30 +13,20 @@ class TileExtractor(object):
         self.tile_width = tile_width
         self.tile_height = tile_height
         
-        #if self.image.width % tile_width:
-            #raise "Can't extract an exact number of tiles from this image"
-        
         pass
         
     def extract(self):
         x = self.x0
         y = self.y0
         
-        print('img width: ' + str(self.image.width))
-        print('img height: ' + str(self.image.height))
-        
-        
         i = 0
         while x + self.tile_width <= self.image.width:
-            print('trying xmax: ' + str(x + self.tile_width))
             
             while y + self.tile_height <= self.image.height:
-                print('trying ymax: ' + str(y + self.tile_height))
                 box = (x, y, x+self.tile_width, y+self.tile_height)
                 tile = self.image.crop(box)
-                print("box")
                 print(box)
-                tile.save('./tiles/' + str(self.counter) + '.png', format='PNG')
+                tile.save('./tiles/' + str(self.counter) + '.tile.png', format='PNG')
                 
                 self.counter += 1
                 
@@ -43,8 +34,33 @@ class TileExtractor(object):
             
             x += self.tile_width
             y = self.y0
-            
+			
+	def merge(self):
+		tiles = []
+		for filename in os.listdir(self.path):
+			if filename.endswith('.tile.png'):
+				tile = Image.open(self.path + '/' + filename)
+				tiles.append(tile)
+				
+		tileset = Image.new('RGB', (len(tiles) * self.tile_width, self.tile_height))
+		
+		i = 0;
+		for x in range(0, tileset.width, self.tile_width):
+			for y in range(0, tileset.height, self.tile_height):
+				tileset.paste(tiles[i])
+				i += 1
+				
+		tileset.show();
+		
+		
 if __name__ == '__main__':
-    extractor = TileExtractor(sys.argv[1], 0, 6, 64, 126)
-    extractor.extract()
-    print("Done")
+    if sys.argc > 2:
+		extractor = TileExtractor(sys.argv[1], 0, 6, 64, 126)
+	
+		o = sys.argv[2]
+		if o == 'extract':
+			extractor.extract()
+		elif o == 'merge':
+			extractor.merge()
+		
+		print("Done")
