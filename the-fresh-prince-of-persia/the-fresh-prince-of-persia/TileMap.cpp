@@ -11,7 +11,6 @@ using namespace std;
 TileMap *TileMap::createTileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program)
 {
 	TileMap *map = new TileMap(levelFile, minCoords, program);
-
 	return map;
 }
 
@@ -117,13 +116,9 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 				nTiles++;
 				posTile = glm::vec2(minCoords.x + i * tileSizeX, minCoords.y + j * tileSizeY);
 				// Generating texture coordinates
-				float lol = float((tile - 1) % tilesheetSize.x);
-
 				texCoordTile[0] = glm::vec2(
 					float((tile - 1) % tilesheetSize.x) / tilesheetSize.x,
 					float((tile - 1) / tilesheetSize.x) / tilesheetSize.y);
-
-
 				texCoordTile[1] = texCoordTile[0] + tileTexSize;
 				//texCoordTile[0] += halfTexel;
 				texCoordTile[1] -= halfTexel;

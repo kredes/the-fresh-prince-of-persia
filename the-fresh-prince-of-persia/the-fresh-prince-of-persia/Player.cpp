@@ -9,6 +9,7 @@
 #define JUMP_ANGLE_STEP 4
 #define JUMP_HEIGHT 96
 #define FALL_STEP 4
+#define Y_PLAYER_OFFSET -20
 
 
 enum PlayerAnims
@@ -108,7 +109,9 @@ void Player::update(int deltaTime)
 		}
 	}
 	
-	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
+	sprite->setPosition(glm::vec2(
+		float(tileMapDispl.x + posPlayer.x),
+		float(tileMapDispl.y + posPlayer.y + Y_PLAYER_OFFSET)));
 }
 
 void Player::render()
