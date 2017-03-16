@@ -4,12 +4,12 @@
 #include "Scene.h"
 #include "Game.h"
 
+// This changes the initial offset of the tiles
+#define SCREEN_X -64
+#define SCREEN_Y -24
 
-#define SCREEN_X 32
-#define SCREEN_Y 16
-
-#define INIT_PLAYER_X_TILES 4
-#define INIT_PLAYER_Y_TILES 25
+#define INIT_PLAYER_X_TILES 2
+#define INIT_PLAYER_Y_TILES 2
 
 
 Scene::Scene()
@@ -20,9 +20,9 @@ Scene::Scene()
 
 Scene::~Scene()
 {
-	if(map != NULL)
+	if (map != NULL)
 		delete map;
-	if(player != NULL)
+	if (player != NULL)
 		delete player;
 }
 
@@ -33,7 +33,14 @@ void Scene::init()
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
-	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+	// Set the player's initial position
+	player->setPosition(
+		glm::vec2(
+			INIT_PLAYER_X_TILES * map->getTileSizeX(),
+			INIT_PLAYER_Y_TILES * map->getTileSizeY()
+		)
+	);
+
 	player->setTileMap(map);
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
@@ -64,13 +71,13 @@ void Scene::initShaders()
 	Shader vShader, fShader;
 
 	vShader.initFromFile(VERTEX_SHADER, "shaders/texture.vert");
-	if(!vShader.isCompiled())
+	if (!vShader.isCompiled())
 	{
 		cout << "Vertex Shader Error" << endl;
 		cout << "" << vShader.log() << endl << endl;
 	}
 	fShader.initFromFile(FRAGMENT_SHADER, "shaders/texture.frag");
-	if(!fShader.isCompiled())
+	if (!fShader.isCompiled())
 	{
 		cout << "Fragment Shader Error" << endl;
 		cout << "" << fShader.log() << endl << endl;
@@ -79,7 +86,7 @@ void Scene::initShaders()
 	texProgram.addShader(vShader);
 	texProgram.addShader(fShader);
 	texProgram.link();
-	if(!texProgram.isLinked())
+	if (!texProgram.isLinked())
 	{
 		cout << "Shader Linking Error" << endl;
 		cout << "" << texProgram.log() << endl << endl;
