@@ -18,6 +18,7 @@ public:
 	void update(int deltaTime);
 	void render();
 	
+	void move(int direction);
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
 	
@@ -28,6 +29,10 @@ private:
 	Texture spritesheet;
 	Sprite *sprite;
 	TileMap *map;
+	// For the tile-based movement
+	bool isMoving;
+	int movementDir;
+	int initMovementPos;
 
 };
 

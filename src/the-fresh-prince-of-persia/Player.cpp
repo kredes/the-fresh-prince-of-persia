@@ -10,6 +10,7 @@
 #define JUMP_HEIGHT 96
 #define FALL_STEP 4
 #define Y_PLAYER_OFFSET -20
+#define PLAYER_STEP 64
 
 
 enum PlayerAnims
@@ -21,6 +22,10 @@ enum PlayerAnims
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 {
 	bJumping = false;
+	isMoving = false;
+	// No movement
+	movementDir = -1;
+	initMovementPos = posPlayer.x;
 	spritesheet.loadFromFile("images/bub.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(32, 32), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
 	sprite->setNumberAnimations(4);
@@ -47,37 +52,70 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	
 }
 
+void Player::move(int direction) {
+	if (!isMoving)
+		return;
+	if (sprite->animation() != direction)
+		sprite->changeAnimation(direction);
+	// If we are moving to the left, we add to the player's position
+	// 2 pixels to the left, if not, to the right.
+	int stride = direction == MOVE_LEFT ? -2 : 2;
+	posPlayer.x += stride;
+	if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
+	{
+		posPlayer.x += stride;
+		// We can do this because of how the enum is declared:
+		// MOVE_RIGHT = 3
+		// STAND_RIGHT = 1
+		// So, if we want the player to stand in the direction of the
+		// latest movement, we can always substract 2 from the original
+		// animation
+		sprite->changeAnimation(direction - 2);
+	}
+}
+
 void Player::update(int deltaTime)
 {
 	sprite->update(deltaTime);
 	if(Game::instance().getSpecialKey(GLUT_KEY_LEFT))
 	{
-		if(sprite->animation() != MOVE_LEFT)
-			sprite->changeAnimation(MOVE_LEFT);
-		posPlayer.x -= 2;
-		if(map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
-		{
-			posPlayer.x += 2;
-			sprite->changeAnimation(STAND_LEFT);
+		if (!isMoving) {
+			isMoving = true;
+			movementDir = MOVE_LEFT;
+			initMovementPos = posPlayer.x;
 		}
 	}
 	else if(Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
 	{
-		if(sprite->animation() != MOVE_RIGHT)
-			sprite->changeAnimation(MOVE_RIGHT);
-		posPlayer.x += 2;
-		if(map->collisionMoveRight(posPlayer, glm::ivec2(32, 32)))
-		{
-			posPlayer.x -= 2;
-			sprite->changeAnimation(STAND_RIGHT);
+		if (!isMoving) {
+			isMoving = true;
+			movementDir = MOVE_RIGHT;
+			initMovementPos = posPlayer.x;
 		}
 	}
 	else
 	{
-		if(sprite->animation() == MOVE_LEFT)
-			sprite->changeAnimation(STAND_LEFT);
-		else if(sprite->animation() == MOVE_RIGHT)
-			sprite->changeAnimation(STAND_RIGHT);
+		// If no key has been pressed, we wait for the movement to stop and
+		// we execute the idle animation
+		if (!isMoving) {
+			if (sprite->animation() == MOVE_LEFT)
+				sprite->changeAnimation(STAND_LEFT);
+			else if (sprite->animation() == MOVE_RIGHT)
+				sprite->changeAnimation(STAND_RIGHT);
+		}
+	}
+
+	move(movementDir);
+
+	if (posPlayer.x > initMovementPos + PLAYER_STEP) {
+		posPlayer.x = initMovementPos + PLAYER_STEP;
+		isMoving = false;
+		movementDir = -1;
+	}
+	if (posPlayer.x < initMovementPos - PLAYER_STEP) {
+		posPlayer.x = initMovementPos - PLAYER_STEP;
+		isMoving = false;
+		movementDir = -1;
 	}
 	
 	if(bJumping)
