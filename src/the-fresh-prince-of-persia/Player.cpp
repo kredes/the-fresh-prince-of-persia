@@ -9,7 +9,7 @@
 #define JUMP_ANGLE_STEP 4
 #define JUMP_HEIGHT 96
 #define FALL_STEP 4
-#define Y_PLAYER_OFFSET -20
+#define Y_PLAYER_OFFSET -40
 #define PLAYER_STEP 64
 
 
@@ -19,6 +19,17 @@ enum PlayerAnims
 };
 
 
+glm::vec2 getTexCoords(int idx) {
+	return glm::vec2(0.00462962962 * idx, 0);
+}
+
+void addKeyframes(Sprite* sprite, int anim, int idx1, int idx2) {
+	for (int i = idx1; i <= idx2; i++)
+	{
+		sprite->addKeyframe(anim, getTexCoords(i));
+	}
+}
+
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 {
 	bJumping = false;
@@ -26,25 +37,21 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	// No movement
 	movementDir = -1;
 	initMovementPos = posPlayer.x;
-	spritesheet.loadFromFile("images/bub.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(32, 32), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
+	spritesheet.loadFromFile("sprites/kid/tileset.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	sprite = Sprite::createSprite(glm::ivec2(56, 57), glm::vec2(0.00462962962, 1), &spritesheet, &shaderProgram);
 	sprite->setNumberAnimations(4);
 	
 		sprite->setAnimationSpeed(STAND_LEFT, 8);
-		sprite->addKeyframe(STAND_LEFT, glm::vec2(0.f, 0.f));
+		sprite->addKeyframe(STAND_LEFT, getTexCoords(14));
 		
 		sprite->setAnimationSpeed(STAND_RIGHT, 8);
-		sprite->addKeyframe(STAND_RIGHT, glm::vec2(0.25f, 0.f));
+		sprite->addKeyframe(STAND_RIGHT, getTexCoords(14));
 		
-		sprite->setAnimationSpeed(MOVE_LEFT, 8);
-		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.f));
-		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.25f));
-		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.5f));
+		sprite->setAnimationSpeed(MOVE_LEFT, 16);
+		addKeyframes(sprite, MOVE_LEFT, 0, 13);
 		
-		sprite->setAnimationSpeed(MOVE_RIGHT, 8);
-		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.f));
-		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.25f));
-		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.5f));
+		sprite->setAnimationSpeed(MOVE_RIGHT, 16);
+		addKeyframes(sprite, MOVE_RIGHT, 0, 13);
 		
 	sprite->changeAnimation(0);
 	tileMapDispl = tileMapPos;
