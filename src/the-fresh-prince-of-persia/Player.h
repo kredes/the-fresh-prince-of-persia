@@ -21,6 +21,7 @@ public:
 	void move(int direction);
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
+
 	
 private:
 	bool bJumping;
@@ -34,6 +35,71 @@ private:
 	int movementDir;
 	int initMovementPos;
 
+	enum PlayerState
+	{
+		// STANDING
+		STANDING_LEFT,
+		STANDING_RIGHT,
+
+		// WALKING
+		WALKING_LEFT,
+		WALKING_RIGHT,
+
+		START_WALKING_RIGHT,
+		START_WALKING_LEFT,
+
+		// RUNNING
+		// This is the default movement action
+		RUNNING_LEFT,
+		RUNNING_RIGHT,
+
+		START_RUNNING_RIGHT,
+		START_RUNNING_LEFT,
+
+		END_RUNNING_RIGHT,
+		END_RUNNING_LEFT,
+
+		// TURNING
+		TURNING_LEFT,
+		TURNING_RIGHT,
+
+		TURNING_RUNNING_LEFT,
+		TURNING_RUNNING_RIGHT,
+
+		// CROUCHING
+		CROUCHING_LEFT,
+		CROUCHING_RIGHT,
+
+		START_CROUCHING_LEFT,
+		START_CROUCHING_RIGHT,
+
+		END_CROUCHING_LEFT,
+		END_CROUCHING_RIGHT,
+
+		// JUMPING
+		JUMPING_LEFT,
+		JUMPING_RIGHT,
+
+		START_JUMPING_LEFT,
+		START_JUMPING_RIGHT,
+
+		END_JUMPING_LEFT,
+		END_JUMPING_RIGHT,
+
+		// JUMPING RUNNING
+		JUMPING_RUNNING_LEFT,
+		JUMPING_RUNNING_RIGHT,
+
+		START_JUMPING_RUNNING_LEFT,
+		START_JUMPING_RUNNING_RIGHT,
+
+		END_JUMPING_RUNNING_LEFT,
+		END_JUMPING_RUNNING_RIGHT
+	};
+
+	string getStateName(Player::PlayerState state);
+	void Player::changeState(Player::PlayerState nextState);
+	Player::PlayerState currentState;
 };
 
 

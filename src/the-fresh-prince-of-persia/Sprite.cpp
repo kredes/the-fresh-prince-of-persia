@@ -34,15 +34,27 @@ Sprite::Sprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Te
 	position = glm::vec2(0.f);
 }
 
+// This function is executed once every frame
 void Sprite::update(int deltaTime)
 {
+	// We check wether if our animation is valid or not
 	if (currentAnimation >= 0)
 	{
+		// We add deltaTime to out animation time
 		timeAnimation += deltaTime;
+		// While our animation time is greater than the milliseconds per keyframe required
 		while (timeAnimation > animations[currentAnimation].millisecsPerKeyframe)
 		{
+			// We change keyframe according to the times out delta time is greater to out animations
+			// time per frame. This is done to execute animations when our GPU is slower than our
+			// animation time per frame.
 			timeAnimation -= animations[currentAnimation].millisecsPerKeyframe;
-			currentKeyframe = (currentKeyframe + 1) % animations[currentAnimation].keyframeDispl.size();
+			++ currentKeyframe;
+			if (currentKeyframe > endingKeyframe)
+			{
+				++timesLoopedCurrentAnimation;
+				currentKeyframe = startingKeyframe;
+			}
 		}
 		texCoordDispl = animations[currentAnimation].keyframeDispl[currentKeyframe];
 	}
@@ -85,14 +97,22 @@ void Sprite::addKeyframe(int animId, const glm::vec2 &displacement)
 		animations[animId].keyframeDispl.push_back(displacement);
 }
 
-void Sprite::changeAnimation(int animId)
+void Sprite::changeAnimation(int animId, int _startingKeyframe)
+{
+	changeAnimation(animId, _startingKeyframe, animations[animId].keyframeDispl.size() - 1);
+}
+
+void Sprite::changeAnimation(int animId, int _startingKeyframe, int _endingKeyframe)
 {
 	if (animId < int(animations.size()))
 	{
 		currentAnimation = animId;
-		currentKeyframe = 0;
 		timeAnimation = 0.f;
 		texCoordDispl = animations[animId].keyframeDispl[0];
+		timesLoopedCurrentAnimation = 0;
+		startingKeyframe = _startingKeyframe;
+		currentKeyframe = startingKeyframe;
+		endingKeyframe = _endingKeyframe;
 	}
 }
 
@@ -104,4 +124,12 @@ int Sprite::animation() const
 void Sprite::setPosition(const glm::vec2 &pos)
 {
 	position = pos;
+}
+
+// This can generate some problems. If there are any bugs with animations
+// looping where they must not, this function may be a good place to start debugging.
+// FIXME
+bool Sprite::isAtEndingKeyframe()
+{
+	return currentKeyframe == endingKeyframe;
 }

@@ -29,9 +29,14 @@ public:
 	void setNumberAnimations(int nAnimations);
 	void setAnimationSpeed(int animId, int keyframesPerSec);
 	void addKeyframe(int animId, const glm::vec2 &frame);
-	void changeAnimation(int animId);
+	void changeAnimation(int animId, int startingKeyframe=0);
+	void changeAnimation(int animId, int startingKeyframe, int endingKeyframe);
 	int animation() const;
 	void setPosition(const glm::vec2 &pos);
+	int timesLoopedCurrentAnimation;
+	int currentKeyframe;
+	int startingKeyframe, endingKeyframe;
+	bool isAtEndingKeyframe();
 
 private:
 	Texture *texture;
@@ -40,7 +45,7 @@ private:
 	GLuint vbo;
 	GLint posLocation, texCoordLocation;
 	glm::vec2 position;
-	int currentAnimation, currentKeyframe;
+	int currentAnimation;
 	float timeAnimation;
 	glm::vec2 texCoordDispl;
 	vector<AnimKeyframes> animations;
