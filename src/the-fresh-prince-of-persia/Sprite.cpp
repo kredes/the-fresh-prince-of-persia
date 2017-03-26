@@ -2,6 +2,7 @@
 #include <GL/gl.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Sprite.h"
+#include <iostream>
 
 
 Sprite *Sprite::createSprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program)
@@ -32,6 +33,7 @@ Sprite::Sprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Te
 	shaderProgram = program;
 	currentAnimation = -1;
 	position = glm::vec2(0.f);
+	isFacingLeft = true;
 }
 
 // This function is executed once every frame
@@ -62,7 +64,17 @@ void Sprite::update(int deltaTime)
 
 void Sprite::render() const
 {
-	glm::mat4 modelview = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.f));
+	glm::mat4 modelview = glm::mat4(1.0f);
+	modelview *= glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.f));
+	// This saves us a lot of repetitive work
+	if (!isFacingLeft) {
+		// Yes, 50 is a magic number.
+		// Yes, i am sorry.
+		modelview *= glm::translate(glm::mat4(1.0f), glm::vec3(50.0f, 0.f, 0.f));
+		modelview *= glm::rotate(glm::mat4(1.0f), 3.1416f, glm::vec3(0, 1, 0));
+	}
+
+	
 	shaderProgram->setUniformMatrix4f("modelview", modelview);
 	shaderProgram->setUniform2f("texCoordDispl", texCoordDispl.x, texCoordDispl.y);
 	glEnable(GL_TEXTURE_2D);
@@ -108,11 +120,11 @@ void Sprite::changeAnimation(int animId, int _startingKeyframe, int _endingKeyfr
 	{
 		currentAnimation = animId;
 		timeAnimation = 0.f;
-		texCoordDispl = animations[animId].keyframeDispl[0];
 		timesLoopedCurrentAnimation = 0;
 		startingKeyframe = _startingKeyframe;
 		currentKeyframe = startingKeyframe;
 		endingKeyframe = _endingKeyframe;
+		texCoordDispl = animations[animId].keyframeDispl[currentKeyframe];
 	}
 }
 

@@ -16,9 +16,8 @@ class Player
 public:
 	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram);
 	void update(int deltaTime);
+	void move(bool isMovingfLeft, int speed);
 	void render();
-	
-	void move(int direction);
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
 

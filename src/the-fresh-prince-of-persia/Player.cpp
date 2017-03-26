@@ -12,20 +12,27 @@
 #define Y_PLAYER_OFFSET -40
 #define PLAYER_STEP 64
 
+#define X_TILES 12
+#define Y_TILES 18
+
+#define PLAYER_RUN_SPEED 2
+#define PLAYER_WALK_SPEED 1
+
+#define SHIFT_KEY 16
 
 enum PlayerAnim
 {
-	STAND_LEFT,
-	STAND_RIGHT,
+	STAND,
+
+	START_RUN,
+	RUN,
+	END_RUN,
 	
-	// RUN
-	RUN_LEFT,
-	RUN_RIGHT,
+	WALK,
+	
+	TURN,
 
-	// WALK
-	WALK_LEFT,
-	WALK_RIGHT
-
+	RUN_TURN,
 };
 
 enum InputKey
@@ -36,14 +43,23 @@ enum InputKey
 	DOWN
 };
 
-glm::vec2 getTexCoords(int idx) {
-	return glm::vec2(0.00462962962 * idx, 0);
+glm::vec2 getTexCoords(int xidx, int yidx) {
+	return glm::vec2(
+		1.0f/(float)X_TILES * (float)xidx, 
+		1.0f/(float)Y_TILES * (float)yidx
+	);
 }
 
-void addKeyframes(Sprite* sprite, int anim, int idx1, int idx2) {
-	for (int i = idx1; i <= idx2; i++)
+void addKeyframes(Sprite* sprite, int anim, int xidx, int yidx, int num) {
+	
+	for (int i = 1; i < num; i++)
 	{
-		sprite->addKeyframe(anim, getTexCoords(i));
+		sprite->addKeyframe(anim, getTexCoords(xidx, yidx));
+		++xidx;
+		if (xidx >= X_TILES) {
+			xidx = 0;
+			++yidx;
+		}
 	}
 }
 
@@ -55,20 +71,38 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	movementDir = -1;
 	initMovementPos = posPlayer.x;
 	spritesheet.loadFromFile("sprites/kid/tileset.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(56, 57), glm::vec2(0.00462962962, 1), &spritesheet, &shaderProgram);
-	sprite->setNumberAnimations(4);
+	sprite = Sprite::createSprite(
+		// Sprite size
+		glm::ivec2(56, 57),
+		// The ammount to add to the texture coords
+		glm::vec2(1.0f/(float)X_TILES, 1.0f/(float)Y_TILES),
+		// The spritesheet
+		&spritesheet, 
+		// The shader
+		&shaderProgram);
+
+	sprite->setNumberAnimations(7);
 	
-		sprite->setAnimationSpeed(STAND_LEFT, 8);
-		sprite->addKeyframe(STAND_LEFT, getTexCoords(14));
+		sprite->setAnimationSpeed(STAND, 8);
+		sprite->addKeyframe(STAND, getTexCoords(1,1));
 		
-		sprite->setAnimationSpeed(STAND_RIGHT, 8);
-		sprite->addKeyframe(STAND_RIGHT, getTexCoords(14));
-		
-		sprite->setAnimationSpeed(RUN_LEFT, 16);
-		addKeyframes(sprite, RUN_LEFT, 1, 13);
-		
-		sprite->setAnimationSpeed(RUN_RIGHT, 16);
-		addKeyframes(sprite, RUN_RIGHT, 1, 13);
+		sprite->setAnimationSpeed(START_RUN, 10);
+		addKeyframes(sprite, START_RUN, 0, 0, 4);
+
+		sprite->setAnimationSpeed(RUN, 10);
+		addKeyframes(sprite, RUN, 4, 0, 10);
+
+		sprite->setAnimationSpeed(END_RUN, 10);
+		addKeyframes(sprite, END_RUN, 3, 5, 4);
+
+		sprite->setAnimationSpeed(WALK, 10);
+		addKeyframes(sprite, WALK, 0, 11, 12);
+
+		sprite->setAnimationSpeed(TURN, 10);
+		addKeyframes(sprite, TURN, 7, 3, 8);
+
+		sprite->setAnimationSpeed(RUN_TURN, 10);
+		addKeyframes(sprite, RUN_TURN, 7, 5, 9);
 
 	sprite->changeAnimation(0);
 	tileMapDispl = tileMapPos;
@@ -80,42 +114,64 @@ void Player::changeState(PlayerState nextState) {
 	switch (nextState)
 	{
 	case STANDING_LEFT:
-		sprite->changeAnimation(STAND_LEFT);
+		sprite->isFacingLeft = true;
+		sprite->changeAnimation(STAND);
 		break;
 	case STANDING_RIGHT:
-		sprite->changeAnimation(STAND_RIGHT);
+		sprite->isFacingLeft = false;
+		sprite->changeAnimation(STAND);
 		break;
 	case WALKING_LEFT:
+		sprite->changeAnimation(WALK);
 		break;
 	case WALKING_RIGHT:
+		sprite->changeAnimation(WALK);
 		break;
 	case START_WALKING_RIGHT:
-		break;
+		sprite->isFacingLeft = false;
+		changeState(WALKING_RIGHT);
+		return;
 	case START_WALKING_LEFT:
-		break;
+		sprite->isFacingLeft = true;
+		changeState(WALKING_LEFT);
+		return;
 	case RUNNING_LEFT:
-		sprite->changeAnimation(RUN_LEFT, 5);
+		sprite->isFacingLeft = true;
+		sprite->changeAnimation(RUN);
 		break;
 	case RUNNING_RIGHT:
-		sprite->changeAnimation(RUN_RIGHT, 5);
+		sprite->isFacingLeft = false;
+		sprite->changeAnimation(RUN);
 		break;
 	case START_RUNNING_RIGHT:
-		sprite->changeAnimation(RUN_RIGHT, 0, 4);
+		sprite->isFacingLeft = false;
+		sprite->changeAnimation(START_RUN);
 		break;
 	case START_RUNNING_LEFT:
-		sprite->changeAnimation(RUN_LEFT, 0, 4);
+		sprite->isFacingLeft = true;
+		sprite->changeAnimation(START_RUN);
 		break;
 	case END_RUNNING_RIGHT:
+		sprite->isFacingLeft = false;
+		sprite->changeAnimation(END_RUN);
 		break;
 	case END_RUNNING_LEFT:
+		sprite->isFacingLeft = true;
+		sprite->changeAnimation(END_RUN);
 		break;
 	case TURNING_LEFT:
+		sprite->isFacingLeft = true;
+		sprite->changeAnimation(TURN);
 		break;
 	case TURNING_RIGHT:
+		sprite->isFacingLeft = false;
+		sprite->changeAnimation(TURN);
 		break;
 	case TURNING_RUNNING_LEFT:
+		sprite->changeAnimation(RUN_TURN);
 		break;
 	case TURNING_RUNNING_RIGHT:
+		sprite->changeAnimation(RUN_TURN);
 		break;
 	case CROUCHING_LEFT:
 		break;
@@ -167,18 +223,40 @@ void Player::update(int deltaTime)
 	case STANDING_LEFT:
 		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
 		{
+			if (Game::instance().getSpecialKey(GLUT_KEY_F1)) {
+				changeState(START_WALKING_LEFT);
+				break;
+			}
 			changeState(START_RUNNING_LEFT);
+		}
+		if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+		{
+			changeState(TURNING_RIGHT);
 		}
 		break;
 	case STANDING_RIGHT:
 		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
 		{
-			changeState(START_RUNNING_LEFT);
+			changeState(TURNING_LEFT);
+		}
+		if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+		{
+			if (Game::instance().getSpecialKey(GLUT_KEY_F1)) {
+				changeState(START_WALKING_RIGHT);
+				break;
+			}
+			changeState(START_RUNNING_RIGHT);
 		}
 		break;
 	case WALKING_LEFT:
+		if (sprite->isAtEndingKeyframe()) {
+			changeState(STANDING_LEFT);
+		}
 		break;
 	case WALKING_RIGHT:
+		if (sprite->isAtEndingKeyframe()) {
+			changeState(STANDING_RIGHT);
+		}
 		break;
 	case START_WALKING_RIGHT:
 		break;
@@ -188,17 +266,32 @@ void Player::update(int deltaTime)
 		if (sprite->isAtEndingKeyframe()) {
 			if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT))
 			{
-				changeState(STANDING_LEFT);
+				changeState(END_RUNNING_LEFT);
 				break;
 			}
 		}
+		move(true, PLAYER_RUN_SPEED);
 		break;
 	case RUNNING_RIGHT:
+		if (sprite->isAtEndingKeyframe()) {
+			if (!Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+			{
+				changeState(END_RUNNING_RIGHT);
+				break;
+			}
+		}
+		move(false, PLAYER_RUN_SPEED);
 		break;
 	case START_RUNNING_RIGHT:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
+			if (!Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+			{
+				changeState(STANDING_RIGHT);
+				break;
+			}
 			changeState(RUNNING_RIGHT);
 		}
+		move(false, PLAYER_WALK_SPEED);
 		break;
 	case START_RUNNING_LEFT:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
@@ -209,19 +302,69 @@ void Player::update(int deltaTime)
 				changeState(STANDING_LEFT);
 				break;
 			}
+			changeState(RUNNING_LEFT);
 		}
+		move(true, PLAYER_WALK_SPEED);
 		break;
 	case END_RUNNING_RIGHT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
+				changeState(TURNING_RUNNING_LEFT);
+				break;
+			}
+			changeState(STANDING_RIGHT);
+		}
+		move(false, PLAYER_WALK_SPEED);
 		break;
 	case END_RUNNING_LEFT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
+				changeState(TURNING_RUNNING_RIGHT);
+				break;
+			}
+			changeState(STANDING_LEFT);
+		}
+		move(true, PLAYER_WALK_SPEED);
 		break;
 	case TURNING_LEFT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(STANDING_LEFT);
+		}
 		break;
 	case TURNING_RIGHT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(STANDING_RIGHT);
+		}
 		break;
 	case TURNING_RUNNING_LEFT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+			{
+				changeState(RUNNING_LEFT);
+				break;
+			}
+			if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+			{
+				changeState(TURNING_RUNNING_RIGHT);
+				break;
+			}
+			changeState(END_RUNNING_LEFT);
+		}
 		break;
 	case TURNING_RUNNING_RIGHT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+			{
+				changeState(TURNING_RUNNING_LEFT);
+				break;
+			}
+			if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+			{
+				changeState(RUNNING_RIGHT);
+				break;
+			}
+			changeState(END_RUNNING_RIGHT);
+		}
 		break;
 	case CROUCHING_LEFT:
 		break;
@@ -262,55 +405,11 @@ void Player::update(int deltaTime)
 	default:
 		break;
 	}
-	sprite->update(deltaTime);
-	return;
 	
-
-	if(Game::instance().getSpecialKey(GLUT_KEY_LEFT))
-	{
-		if (!isMoving) {
-			isMoving = true;
-			movementDir = WALK_LEFT;
-			initMovementPos = posPlayer.x;
-		}
-	}
-	else if(Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
-	{
-		if (!isMoving) {
-			isMoving = true;
-			movementDir = WALK_RIGHT;
-			initMovementPos = posPlayer.x;
-		}
-	}
-	else
-	{
-		// If no key has been pressed, we wait for the movement to stop and
-		// we execute the idle animation
-		if (!isMoving) {
-			if (sprite->animation() == WALK_LEFT)
-				sprite->changeAnimation(STAND_LEFT);
-			else if (sprite->animation() == WALK_RIGHT)
-				sprite->changeAnimation(STAND_RIGHT);
-		}
-	}
-
-	move(movementDir);
-
-	if (posPlayer.x > initMovementPos + PLAYER_STEP) {
-		posPlayer.x = initMovementPos + PLAYER_STEP;
-		isMoving = false;
-		movementDir = -1;
-	}
-	if (posPlayer.x < initMovementPos - PLAYER_STEP) {
-		posPlayer.x = initMovementPos - PLAYER_STEP;
-		isMoving = false;
-		movementDir = -1;
-	}
-	
-	if(bJumping)
+	if (bJumping)
 	{
 		jumpAngle += JUMP_ANGLE_STEP;
-		if(jumpAngle == 180)
+		if (jumpAngle == 180)
 		{
 			bJumping = false;
 			posPlayer.y = startY;
@@ -318,16 +417,16 @@ void Player::update(int deltaTime)
 		else
 		{
 			posPlayer.y = int(startY - 96 * sin(3.14159f * jumpAngle / 180.f));
-			if(jumpAngle > 90)
+			if (jumpAngle > 90)
 				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 32), &posPlayer.y);
 		}
 	}
 	else
 	{
 		posPlayer.y += FALL_STEP;
-		if(map->collisionMoveDown(posPlayer, glm::ivec2(32, 32), &posPlayer.y))
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 32), &posPlayer.y))
 		{
-			if(Game::instance().getSpecialKey(GLUT_KEY_UP))
+			if (Game::instance().getSpecialKey(GLUT_KEY_UP))
 			{
 				bJumping = true;
 				jumpAngle = 0;
@@ -335,32 +434,25 @@ void Player::update(int deltaTime)
 			}
 		}
 	}
-	
+
+	sprite->update(deltaTime);
+
 	sprite->setPosition(glm::vec2(
 		float(tileMapDispl.x + posPlayer.x),
 		float(tileMapDispl.y + posPlayer.y + Y_PLAYER_OFFSET)));
 }
 
-void Player::move(int direction) {
-	if (!isMoving)
-		return;
-	if (sprite->animation() != direction)
-		sprite->changeAnimation(direction);
-	// If we are moving to the left, we add to the player's position
-	// 2 pixels to the left, if not, to the right.
-	int stride = direction == WALK_LEFT ? -2 : 2;
+void Player::move(bool isMovingLeft, int speed) {
+
+	int stride = isMovingLeft ? -speed : speed;
 	posPlayer.x += stride;
 	if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
 	{
-		posPlayer.x += stride;
-		// We can do this because of how the enum is declared:
-		// MOVE_RIGHT = 3
-		// STAND_RIGHT = 1
-		// So, if we want the player to stand in the direction of the
-		// latest movement, we can always substract 2 from the original
-		// animation
-		sprite->changeAnimation(direction - 2);
-	}
+		posPlayer.x -= stride;
+		changeState(
+			isMovingLeft ? STANDING_LEFT : STANDING_RIGHT
+		);
+	}	
 }
 
 void Player::render()

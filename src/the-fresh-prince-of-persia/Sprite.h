@@ -37,6 +37,7 @@ public:
 	int currentKeyframe;
 	int startingKeyframe, endingKeyframe;
 	bool isAtEndingKeyframe();
+	bool isFacingLeft;
 
 private:
 	Texture *texture;
