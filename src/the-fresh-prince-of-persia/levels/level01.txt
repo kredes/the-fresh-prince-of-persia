@@ -1,10 +1,9 @@
 TILEMAP
 11 5 							-- Size of tile map in tiles
 64 126 114 126 							-- Tile size & block size
-sprites/tiles/tilemap.png 	-- Tilesheet
-2 1 								-- Number of tiles in tilesheet
-00000000001
-00000000001
-00000000001
-11111111111
-22222222222
+sprites/tiles/tileset.png 	-- Tilesheet
+12 2								-- Number of tiles in tilesheet
+2,6,6,6,1,7,8,7,8,9,10
+0,0,0,11,9,9,9,9,9,9,9
+9,9,12,6,6,6,7,5,8,9,9
+9,12,0,6,5,6,0,0,0,8,9
