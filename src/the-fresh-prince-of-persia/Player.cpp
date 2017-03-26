@@ -252,11 +252,13 @@ void Player::update(int deltaTime)
 		if (sprite->isAtEndingKeyframe()) {
 			changeState(STANDING_LEFT);
 		}
+		move(true, PLAYER_WALK_SPEED);
 		break;
 	case WALKING_RIGHT:
 		if (sprite->isAtEndingKeyframe()) {
 			changeState(STANDING_RIGHT);
 		}
+		move(false, PLAYER_WALK_SPEED);
 		break;
 	case START_WALKING_RIGHT:
 		break;
