@@ -80,19 +80,20 @@ bool TileMap::loadLevel(const string &levelFile)
 	for (int j = 0; j < mapSize.y; j++)
 	{
 		getline(fin, line);
-		sstream.str(line);
+		sstream = stringstream(line);	// Autismo. Arriba funciona sin instanciar de nuevo, pero aquí no.
+		
 		for (int i = 0; i < mapSize.x; i++)
 		{
 			sstream >> tile;
-			map[j*mapSize.x + i] = tile;
-
-			if (sstream.peek() == ',') sstream.ignore();
+			map[j*mapSize.x + i] = tile + 1;	// Tiled comienza en 0
+			sstream.ignore();	// Comma
 		}
-		
-		/*fin.get(tile);
+		/* No sé que coño es esto, ya estaba aquí antes
+		fin.get(tile);
 #ifndef _WIN32
 		fin.get(tile);
-#endif*/
+#endif
+*/
 	}
 	fin.close();
 
