@@ -121,8 +121,9 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		sprite->setAnimationSpeed(END_CROUCH, 10);
 		addKeyframes(sprite, END_CROUCH, 11, 9, 10);
 
-		//sprite->setAnimationSpeed(WALK_CROUCH, 10);
-		//addKeyframes(sprite, WALK_CROUCH, 11, 9, 10);
+		sprite->setAnimationSpeed(WALK_CROUCH, 8);
+		addKeyframes(sprite, WALK_CROUCH, 11, 9, 4);
+		
 		//START_CROUCH,
 		//CROUCH,
 		//END_CROUCH,
@@ -202,6 +203,12 @@ void Player::changeState(PlayerState nextState) {
 		break;
 	case CROUCHING_RIGHT:
 		sprite->changeAnimation(CROUCH);
+		break;
+	case WALK_CROUCHING_LEFT:
+		sprite->changeAnimation(WALK_CROUCH);
+		break;
+	case WALK_CROUCHING_RIGHT:
+		sprite->changeAnimation(WALK_CROUCH);
 		break;
 	case START_CROUCHING_LEFT:
 		sprite->changeAnimation(START_CROUCH);
@@ -410,11 +417,43 @@ void Player::update(int deltaTime)
 		if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
 			changeState(END_CROUCHING_LEFT);
 		}
+		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
+			changeState(WALK_CROUCHING_LEFT);
+		}
 		break;
 	case CROUCHING_RIGHT:
 		if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
 			changeState(END_CROUCHING_RIGHT);
 		}
+		if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
+			changeState(WALK_CROUCHING_RIGHT);
+		}
+		break;
+	case WALK_CROUCHING_LEFT:
+		if (sprite->isAtEndingKeyframe()) {
+			if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
+				changeState(END_CROUCHING_LEFT);
+				break;
+			}
+			if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
+				changeState(CROUCHING_LEFT);
+				break;
+			}
+		}
+		move(true, PLAYER_WALK_SPEED);
+		break;
+	case WALK_CROUCHING_RIGHT:
+		if (sprite->isAtEndingKeyframe()) {
+			if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
+				changeState(END_CROUCHING_RIGHT);
+				break;
+			}
+			if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
+				changeState(CROUCHING_RIGHT);
+				break;
+			}
+		}
+		move(false, PLAYER_WALK_SPEED);
 		break;
 	case START_CROUCHING_LEFT:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
@@ -635,6 +674,10 @@ string Player::getStateName(PlayerState state) {
 	case END_JUMPING_RUNNING_RIGHT:
 		return "END_JUMPING_RUNNING_RIGHT";
 		break;
+	case WALK_CROUCHING_LEFT:
+		return "WALK_CROUCHING_LEFT";
+	case WALK_CROUCHING_RIGHT:
+		return "WALK_CROUCHING_RIGHT";
 	default:
 		break;
 	}
