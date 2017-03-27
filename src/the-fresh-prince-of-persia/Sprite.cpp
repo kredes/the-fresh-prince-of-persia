@@ -4,6 +4,7 @@
 #include "Sprite.h"
 #include <iostream>
 
+#define PLAYER_OFFSET_TURN 85
 
 Sprite *Sprite::createSprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program)
 {
@@ -52,9 +53,13 @@ void Sprite::update(int deltaTime)
 			// animation time per frame.
 			timeAnimation -= animations[currentAnimation].millisecsPerKeyframe;
 			++ currentKeyframe;
-			if (currentKeyframe > endingKeyframe)
-			{
+
+			if (currentKeyframe == endingKeyframe) {
 				++timesLoopedCurrentAnimation;
+			}
+
+			if (currentKeyframe > endingKeyframe)
+			{				
 				currentKeyframe = startingKeyframe;
 			}
 		}
@@ -68,9 +73,9 @@ void Sprite::render() const
 	modelview *= glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.f));
 	// This saves us a lot of repetitive work
 	if (!isFacingLeft) {
-		// Yes, 50 is a magic number.
+		// Yes, PLAYER_OFFSET_TURN is a magic number.
 		// Yes, i am sorry.
-		modelview *= glm::translate(glm::mat4(1.0f), glm::vec3(50.0f, 0.f, 0.f));
+		modelview *= glm::translate(glm::mat4(1.0f), glm::vec3(PLAYER_OFFSET_TURN, 0.f, 0.f));
 		modelview *= glm::rotate(glm::mat4(1.0f), 3.1416f, glm::vec3(0, 1, 0));
 	}
 

@@ -7,6 +7,8 @@
 
 using namespace std;
 
+#define CLOSE_ENOUGH_Y 4
+
 
 TileMap *TileMap::createTileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program)
 {
@@ -169,6 +171,16 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 	texCoordLocation = program.bindVertexAttribute("texCoord", 2, 4 * sizeof(float), (void *)(2 * sizeof(float)));
 }
 
+bool isCollisionTile(int tileType) {
+	switch (tileType)
+	{
+	case 10:
+		return true;
+	default:
+		return false;
+	}
+}
+
 // Collision tests for axis aligned bounding boxes.
 // Method collisionMoveDown also corrects Y coordinate if the box is
 // already intersecting a tile below.
@@ -182,7 +194,7 @@ bool TileMap::collisionMoveLeft(const glm::ivec2 &pos, const glm::ivec2 &size) c
 	y1 = (pos.y + size.y - 1) / tileSizeY;
 	for (int y = y0; y <= y1; y++)
 	{
-		if (map[y*mapSize.x + x] > 1)
+		if (isCollisionTile(map[y*mapSize.x + x]))
 			return true;
 	}
 
@@ -198,7 +210,7 @@ bool TileMap::collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size) 
 	y1 = (pos.y + size.y - 1) / tileSizeY;
 	for (int y = y0; y <= y1; y++)
 	{
-		if (map[y*mapSize.x + x] > 1)
+		if (isCollisionTile(map[y*mapSize.x + x]))
 			return true;
 	}
 
@@ -214,11 +226,16 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 	y = (pos.y + size.y - 1) / tileSizeY;
 	for (int x = x0; x <= x1; x++)
 	{
-		if (map[y*mapSize.x + x] > 1)
+		if (isCollisionTile(map[y*mapSize.x + x]))
 		{
-			if (*posY - tileSizeY * y + size.y <= 4)
+			// Player's position on the screen
+			// based only on tile belongingness
+			int realPosition = tileSizeY * y;
+			// If the y pos of the player minus its tile position plus its sprite size
+			// is less than a certain ammount
+			if (*posY - realPosition + size.y <= CLOSE_ENOUGH_Y)
 			{
-				*posY = tileSizeY * y - size.y;
+				*posY = realPosition - size.y;
 				return true;
 			}
 		}

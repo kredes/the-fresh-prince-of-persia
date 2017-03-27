@@ -9,7 +9,7 @@
 #define JUMP_ANGLE_STEP 4
 #define JUMP_HEIGHT 96
 #define FALL_STEP 4
-#define Y_PLAYER_OFFSET -40
+#define Y_PLAYER_OFFSET -15
 #define PLAYER_STEP 64
 
 #define X_TILES 12
@@ -17,6 +17,9 @@
 
 #define PLAYER_RUN_SPEED 2
 #define PLAYER_WALK_SPEED 1
+
+#define PLAYER_SIZE_X 84
+#define PLAYER_SIZE_Y 86
 
 #define SHIFT_KEY 16
 
@@ -27,12 +30,17 @@ enum PlayerAnim
 	START_RUN,
 	RUN,
 	END_RUN,
-	
+
 	WALK,
-	
+
 	TURN,
 
 	RUN_TURN,
+
+	START_CROUCH,
+	CROUCH,
+	END_CROUCH,
+	WALK_CROUCH
 };
 
 enum InputKey
@@ -52,7 +60,7 @@ glm::vec2 getTexCoords(int xidx, int yidx) {
 
 void addKeyframes(Sprite* sprite, int anim, int xidx, int yidx, int num) {
 	
-	for (int i = 1; i < num; i++)
+	for (int i = 1; i <= num; i++)
 	{
 		sprite->addKeyframe(anim, getTexCoords(xidx, yidx));
 		++xidx;
@@ -73,7 +81,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	spritesheet.loadFromFile("sprites/kid/tileset.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(
 		// Sprite size
-		glm::ivec2(56, 57),
+		glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y),
 		// The ammount to add to the texture coords
 		glm::vec2(1.0f/(float)X_TILES, 1.0f/(float)Y_TILES),
 		// The spritesheet
@@ -81,7 +89,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		// The shader
 		&shaderProgram);
 
-	sprite->setNumberAnimations(7);
+	sprite->setNumberAnimations(20);
 	
 		sprite->setAnimationSpeed(STAND, 8);
 		sprite->addKeyframe(STAND, getTexCoords(1,1));
@@ -90,9 +98,9 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		addKeyframes(sprite, START_RUN, 0, 0, 4);
 
 		sprite->setAnimationSpeed(RUN, 10);
-		addKeyframes(sprite, RUN, 4, 0, 10);
+		addKeyframes(sprite, RUN, 4, 0, 9);
 
-		sprite->setAnimationSpeed(END_RUN, 10);
+		sprite->setAnimationSpeed(END_RUN, 8);
 		addKeyframes(sprite, END_RUN, 3, 5, 4);
 
 		sprite->setAnimationSpeed(WALK, 10);
@@ -103,6 +111,22 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 
 		sprite->setAnimationSpeed(RUN_TURN, 10);
 		addKeyframes(sprite, RUN_TURN, 7, 5, 9);
+
+		sprite->setAnimationSpeed(START_CROUCH, 10);
+		addKeyframes(sprite, START_CROUCH, 8, 9, 3);
+
+		sprite->setAnimationSpeed(CROUCH, 1);
+		addKeyframes(sprite, CROUCH, 10, 9, 1);
+
+		sprite->setAnimationSpeed(END_CROUCH, 10);
+		addKeyframes(sprite, END_CROUCH, 11, 9, 10);
+
+		//sprite->setAnimationSpeed(WALK_CROUCH, 10);
+		//addKeyframes(sprite, WALK_CROUCH, 11, 9, 10);
+		//START_CROUCH,
+		//CROUCH,
+		//END_CROUCH,
+		//WALK_CROUCH
 
 	sprite->changeAnimation(0);
 	tileMapDispl = tileMapPos;
@@ -174,16 +198,22 @@ void Player::changeState(PlayerState nextState) {
 		sprite->changeAnimation(RUN_TURN);
 		break;
 	case CROUCHING_LEFT:
+		sprite->changeAnimation(CROUCH);
 		break;
 	case CROUCHING_RIGHT:
+		sprite->changeAnimation(CROUCH);
 		break;
 	case START_CROUCHING_LEFT:
+		sprite->changeAnimation(START_CROUCH);
 		break;
 	case START_CROUCHING_RIGHT:
+		sprite->changeAnimation(START_CROUCH);
 		break;
 	case END_CROUCHING_LEFT:
+		sprite->changeAnimation(END_CROUCH);
 		break;
 	case END_CROUCHING_RIGHT:
+		sprite->changeAnimation(END_CROUCH);
 		break;
 	case JUMPING_LEFT:
 		break;
@@ -233,6 +263,10 @@ void Player::update(int deltaTime)
 		{
 			changeState(TURNING_RIGHT);
 		}
+		if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
+		{
+			changeState(START_CROUCHING_LEFT);
+		}
 		break;
 	case STANDING_RIGHT:
 		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
@@ -246,6 +280,10 @@ void Player::update(int deltaTime)
 				break;
 			}
 			changeState(START_RUNNING_RIGHT);
+		}
+		if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
+		{
+			changeState(START_CROUCHING_RIGHT);
 		}
 		break;
 	case WALKING_LEFT:
@@ -288,7 +326,7 @@ void Player::update(int deltaTime)
 		if (sprite->timesLoopedCurrentAnimation > 0) {
 			if (!Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
 			{
-				changeState(STANDING_RIGHT);
+				changeState(END_RUNNING_RIGHT);
 				break;
 			}
 			changeState(RUNNING_RIGHT);
@@ -301,7 +339,7 @@ void Player::update(int deltaTime)
 			// running
 			if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT))
 			{
-				changeState(STANDING_LEFT);
+				changeState(END_RUNNING_LEFT);
 				break;
 			}
 			changeState(RUNNING_LEFT);
@@ -369,16 +407,34 @@ void Player::update(int deltaTime)
 		}
 		break;
 	case CROUCHING_LEFT:
+		if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
+			changeState(END_CROUCHING_LEFT);
+		}
 		break;
 	case CROUCHING_RIGHT:
+		if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
+			changeState(END_CROUCHING_RIGHT);
+		}
 		break;
 	case START_CROUCHING_LEFT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(CROUCHING_LEFT);
+		}
 		break;
 	case START_CROUCHING_RIGHT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(CROUCHING_RIGHT);
+		}
 		break;
 	case END_CROUCHING_LEFT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(STANDING_LEFT);
+		}
 		break;
 	case END_CROUCHING_RIGHT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(STANDING_RIGHT);
+		}
 		break;
 	case JUMPING_LEFT:
 		break;
@@ -420,13 +476,14 @@ void Player::update(int deltaTime)
 		{
 			posPlayer.y = int(startY - 96 * sin(3.14159f * jumpAngle / 180.f));
 			if (jumpAngle > 90)
-				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 32), &posPlayer.y);
+				bJumping = !map->collisionMoveDown(posPlayer, 
+					glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y);
 		}
 	}
 	else
 	{
 		posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 32), &posPlayer.y))
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
 		{
 			if (Game::instance().getSpecialKey(GLUT_KEY_UP))
 			{
@@ -448,7 +505,7 @@ void Player::move(bool isMovingLeft, int speed) {
 
 	int stride = isMovingLeft ? -speed : speed;
 	posPlayer.x += stride;
-	if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
+	if (map->collisionMoveLeft(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y)))
 	{
 		posPlayer.x -= stride;
 		changeState(
