@@ -7,7 +7,7 @@
 
 
 #define JUMP_ANGLE_STEP 4
-#define JUMP_HEIGHT 96
+#define JUMP_HEIGHT 64
 #define FALL_STEP 4
 #define Y_PLAYER_OFFSET -15
 #define PLAYER_STEP 64
@@ -18,8 +18,12 @@
 #define PLAYER_RUN_SPEED 2
 #define PLAYER_WALK_SPEED 1
 
-#define PLAYER_SIZE_X 84
-#define PLAYER_SIZE_Y 86
+#define PLAYER_SIZE_X 100
+#define PLAYER_SIZE_Y 104
+
+// Bounding box, for collisions
+#define PLAYER_BB_SIZE_X 84
+#define PLAYER_BB_SIZE_Y 20
 
 #define SHIFT_KEY 16
 
@@ -40,7 +44,9 @@ enum PlayerAnim
 	START_CROUCH,
 	CROUCH,
 	END_CROUCH,
-	WALK_CROUCH
+	WALK_CROUCH,
+
+	JUMP
 };
 
 enum InputKey
@@ -73,6 +79,7 @@ void addKeyframes(Sprite* sprite, int anim, int xidx, int yidx, int num) {
 
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 {
+
 	bJumping = false;
 	isMoving = false;
 	// No movement
@@ -124,15 +131,13 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		sprite->setAnimationSpeed(WALK_CROUCH, 8);
 		addKeyframes(sprite, WALK_CROUCH, 11, 9, 4);
 		
-		//START_CROUCH,
-		//CROUCH,
-		//END_CROUCH,
-		//WALK_CROUCH
+		sprite->setAnimationSpeed(JUMP, 8);
+		addKeyframes(sprite, JUMP, 7, 6, 12);
 
 	sprite->changeAnimation(0);
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
-	Player::changeState(STANDING_RIGHT);
+	Player::changeState(FALLING_RIGHT);
 }
 
 void Player::changeState(PlayerState nextState) {
@@ -223,12 +228,22 @@ void Player::changeState(PlayerState nextState) {
 		sprite->changeAnimation(END_CROUCH);
 		break;
 	case JUMPING_LEFT:
+		sprite->changeAnimation(JUMP, 11, 11);
 		break;
 	case JUMPING_RIGHT:
+		sprite->changeAnimation(JUMP, 11, 11);
+		break;
+	case FALLING_LEFT:
+		sprite->isFacingLeft = true;
+		break;
+	case FALLING_RIGHT:
+		sprite->isFacingLeft = false;
 		break;
 	case START_JUMPING_LEFT:
+		sprite->changeAnimation(JUMP, 0, 10);
 		break;
 	case START_JUMPING_RIGHT:
+		sprite->changeAnimation(JUMP, 0, 10);
 		break;
 	case END_JUMPING_LEFT:
 		break;
@@ -274,6 +289,10 @@ void Player::update(int deltaTime)
 		{
 			changeState(START_CROUCHING_LEFT);
 		}
+		if (Game::instance().getSpecialKey(GLUT_KEY_UP))
+		{
+			changeState(START_JUMPING_LEFT);
+		}
 		break;
 	case STANDING_RIGHT:
 		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
@@ -291,6 +310,10 @@ void Player::update(int deltaTime)
 		if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
 		{
 			changeState(START_CROUCHING_RIGHT);
+		}
+		if (Game::instance().getSpecialKey(GLUT_KEY_UP))
+		{
+			changeState(START_JUMPING_RIGHT);
 		}
 		break;
 	case WALKING_LEFT:
@@ -457,11 +480,19 @@ void Player::update(int deltaTime)
 		break;
 	case START_CROUCHING_LEFT:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
+			if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
+				changeState(END_CROUCHING_LEFT);
+				break;
+			}
 			changeState(CROUCHING_LEFT);
 		}
 		break;
 	case START_CROUCHING_RIGHT:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
+			if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
+				changeState(END_CROUCHING_RIGHT);
+				break;
+			}
 			changeState(CROUCHING_RIGHT);
 		}
 		break;
@@ -476,12 +507,72 @@ void Player::update(int deltaTime)
 		}
 		break;
 	case JUMPING_LEFT:
+		jumpAngle += JUMP_ANGLE_STEP;
+		if (jumpAngle == 180)
+		{
+			posPlayer.y = startY;
+			changeState(FALLING_LEFT);
+		}
+		else
+		{
+			posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
+			if (jumpAngle > 90) {
+				if (map->collisionMoveDown(posPlayer,
+					glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
+				{
+					changeState(START_CROUCHING_LEFT);
+				}
+			}
+				
+		}
 		break;
 	case JUMPING_RIGHT:
+		jumpAngle += JUMP_ANGLE_STEP;
+		if (jumpAngle == 180)
+		{
+			posPlayer.y = startY;
+			changeState(FALLING_RIGHT);
+		}
+		else
+		{
+			posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
+			if (jumpAngle > 90) {
+				if (map->collisionMoveDown(posPlayer,
+					glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
+				{
+					changeState(START_CROUCHING_RIGHT);
+				}
+			}
+
+		}
+		break;
+	case FALLING_LEFT:
+		posPlayer.y += FALL_STEP;
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
+		{
+			changeState(START_CROUCHING_LEFT);
+		}
+		break;
+	case FALLING_RIGHT:
+		posPlayer.y += FALL_STEP;
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
+		{
+			changeState(START_CROUCHING_RIGHT);
+		}
 		break;
 	case START_JUMPING_LEFT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			jumpAngle = 0;
+			startY = posPlayer.y;
+			changeState(JUMPING_LEFT);
+		}
 		break;
 	case START_JUMPING_RIGHT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			jumpAngle = 0;
+			startY = posPlayer.y;
+			changeState(JUMPING_RIGHT);
+		}
 		break;
 	case END_JUMPING_LEFT:
 		break;
@@ -502,37 +593,16 @@ void Player::update(int deltaTime)
 	default:
 		break;
 	}
-	
+	/*
 	if (bJumping)
 	{
-		jumpAngle += JUMP_ANGLE_STEP;
-		if (jumpAngle == 180)
-		{
-			bJumping = false;
-			posPlayer.y = startY;
-		}
-		else
-		{
-			posPlayer.y = int(startY - 96 * sin(3.14159f * jumpAngle / 180.f));
-			if (jumpAngle > 90)
-				bJumping = !map->collisionMoveDown(posPlayer, 
-					glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y);
-		}
+		
 	}
 	else
 	{
-		posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
-		{
-			if (Game::instance().getSpecialKey(GLUT_KEY_UP))
-			{
-				bJumping = true;
-				jumpAngle = 0;
-				startY = posPlayer.y;
-			}
-		}
+		
 	}
-
+	*/
 	sprite->update(deltaTime);
 
 	sprite->setPosition(glm::vec2(
@@ -679,7 +749,7 @@ string Player::getStateName(PlayerState state) {
 	case WALK_CROUCHING_RIGHT:
 		return "WALK_CROUCHING_RIGHT";
 	default:
-		break;
+		return "UNKNOWN";
 	}
 }
 
