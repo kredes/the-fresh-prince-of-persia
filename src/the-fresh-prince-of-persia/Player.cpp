@@ -17,7 +17,7 @@
 #define Y_TILES 18
 
 #define PLAYER_RUN_SPEED 4
-#define PLAYER_WALK_SPEED 2
+#define PLAYER_WALK_SPEED 1
 
 #define PLAYER_SIZE_X 100
 #define PLAYER_SIZE_Y 104
@@ -47,9 +47,9 @@ enum PlayerAnim
 	END_CROUCH,
 	WALK_CROUCH,
 
-	JUMP,
-
+	JUMP_STAND,
 	JUMP_RUN,
+	JUMP,
 };
 
 enum InputKey
@@ -134,11 +134,14 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	sprite->setAnimationSpeed(WALK_CROUCH, 8);
 	addKeyframes(sprite, WALK_CROUCH, 11, 9, 4);
 
-	sprite->setAnimationSpeed(JUMP, 8);
-	addKeyframes(sprite, JUMP, 7, 6, 12);
+	sprite->setAnimationSpeed(JUMP_STAND, 8);
+	addKeyframes(sprite, JUMP_STAND, 7, 6, 12);
 
 	sprite->setAnimationSpeed(JUMP_RUN, 8);
 	addKeyframes(sprite, JUMP_RUN, 8, 2, 12);
+
+	sprite->setAnimationSpeed(JUMP, 8);
+	addKeyframes(sprite, JUMP, 1, 1, 19);
 
 	sprite->changeAnimation(0);
 	tileMapDispl = tileMapPos;
@@ -233,11 +236,11 @@ void Player::changeState(PlayerState nextState) {
 	case END_CROUCHING_RIGHT:
 		sprite->changeAnimation(END_CROUCH);
 		break;
-	case JUMPING_LEFT:
-		sprite->changeAnimation(JUMP, 11, 11);
+	case JUMPING_STANDING_LEFT:
+		sprite->changeAnimation(JUMP_STAND, 11, 11);
 		break;
-	case JUMPING_RIGHT:
-		sprite->changeAnimation(JUMP, 11, 11);
+	case JUMPING_STANDING_RIGHT:
+		sprite->changeAnimation(JUMP_STAND, 11, 11);
 		break;
 	case FALLING_LEFT:
 		sprite->isFacingLeft = true;
@@ -245,15 +248,11 @@ void Player::changeState(PlayerState nextState) {
 	case FALLING_RIGHT:
 		sprite->isFacingLeft = false;
 		break;
-	case START_JUMPING_LEFT:
-		sprite->changeAnimation(JUMP, 0, 10);
+	case START_JUMPING_STANDING_LEFT:
+		sprite->changeAnimation(JUMP_STAND, 0, 10);
 		break;
-	case START_JUMPING_RIGHT:
-		sprite->changeAnimation(JUMP, 0, 10);
-		break;
-	case END_JUMPING_LEFT:
-		break;
-	case END_JUMPING_RIGHT:
+	case START_JUMPING_STANDING_RIGHT:
+		sprite->changeAnimation(JUMP_STAND, 0, 10);
 		break;
 	case JUMPING_RUNNING_LEFT:
 		startY = posPlayer.y;
@@ -261,13 +260,29 @@ void Player::changeState(PlayerState nextState) {
 		sprite->changeAnimation(JUMP_RUN, 6);
 		break;
 	case JUMPING_RUNNING_RIGHT:
+		startY = posPlayer.y;
+		jumpAngle = 0;
+		sprite->changeAnimation(JUMP_RUN, 6);
 		break;
 	case START_JUMPING_RUNNING_LEFT:
 		sprite->changeAnimation(JUMP_RUN, 0, 5);
 		break;
 	case START_JUMPING_RUNNING_RIGHT:
+		sprite->changeAnimation(JUMP_RUN, 0, 5);
 		break;
-	case END_JUMPING_RUNNING_LEFT:
+	case JUMPING_LEFT:
+		sprite->changeAnimation(JUMP, 8, 12);
+		break;
+	case JUMPING_RIGHT:
+
+		break;
+	case START_JUMPING_LEFT:
+		sprite->changeAnimation(JUMP, 0, 7);
+		break;
+	case START_JUMPING_RIGHT:
+		break;
+	case END_JUMPING_LEFT:
+		sprite->changeAnimation(JUMP, 13, 18);
 		break;
 	case END_JUMPING_RUNNING_RIGHT:
 		break;
@@ -303,7 +318,7 @@ void Player::update(int deltaTime)
 		}
 		if (Game::instance().getSpecialKey(GLUT_KEY_UP))
 		{
-			changeState(START_JUMPING_LEFT);
+			changeState(START_JUMPING_STANDING_LEFT);
 		}
 		break;
 	case STANDING_RIGHT:
@@ -325,7 +340,7 @@ void Player::update(int deltaTime)
 		}
 		if (Game::instance().getSpecialKey(GLUT_KEY_UP))
 		{
-			changeState(START_JUMPING_RIGHT);
+			changeState(START_JUMPING_STANDING_RIGHT);
 		}
 		break;
 	case WALKING_LEFT:
@@ -366,21 +381,33 @@ void Player::update(int deltaTime)
 				changeState(END_RUNNING_RIGHT);
 				break;
 			}
+			if (Game::instance().getSpecialKey(GLUT_KEY_UP))
+			{
+				changeState(START_JUMPING_RUNNING_RIGHT);
+				break;
+			}
 		}
 		move(false, PLAYER_RUN_SPEED);
 		break;
 	case START_RUNNING_RIGHT:
+		
+
 		if (sprite->timesLoopedCurrentAnimation > 0) {
 			if (!Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
 			{
 				changeState(END_RUNNING_RIGHT);
 				break;
-			}
+			}		
+
 			changeState(RUNNING_RIGHT);
 		}
 		move(false, PLAYER_WALK_SPEED);
 		break;
 	case START_RUNNING_LEFT:
+		if (Game::instance().getSpecialKey(GLUT_KEY_UP)) {
+			changeState(START_JUMPING_LEFT);
+			break;
+		}
 		if (sprite->timesLoopedCurrentAnimation > 0) {
 			// If we are not pressing the left key, there is no point on keeping
 			// running
@@ -523,7 +550,7 @@ void Player::update(int deltaTime)
 			changeState(STANDING_RIGHT);
 		}
 		break;
-	case JUMPING_LEFT:
+	case JUMPING_STANDING_LEFT:
 		jumpAngle += JUMP_ANGLE_STEP;
 		if (jumpAngle == 180)
 		{
@@ -543,7 +570,7 @@ void Player::update(int deltaTime)
 
 		}
 		break;
-	case JUMPING_RIGHT:
+	case JUMPING_STANDING_RIGHT:
 		jumpAngle += JUMP_ANGLE_STEP;
 		if (jumpAngle == 180)
 		{
@@ -560,7 +587,6 @@ void Player::update(int deltaTime)
 					changeState(START_CROUCHING_RIGHT);
 				}
 			}
-
 		}
 		break;
 	case FALLING_LEFT:
@@ -577,28 +603,22 @@ void Player::update(int deltaTime)
 			changeState(START_CROUCHING_RIGHT);
 		}
 		break;
-	case START_JUMPING_LEFT:
+	case START_JUMPING_STANDING_LEFT:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
 			jumpAngle = 0;
 			startY = posPlayer.y;
-			changeState(JUMPING_LEFT);
+			changeState(JUMPING_STANDING_LEFT);
 		}
 		break;
-	case START_JUMPING_RIGHT:
+	case START_JUMPING_STANDING_RIGHT:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
 			jumpAngle = 0;
 			startY = posPlayer.y;
-			changeState(JUMPING_RIGHT);
+			changeState(JUMPING_STANDING_RIGHT);
 		}
-		break;
-	case END_JUMPING_LEFT:
-		break;
-	case END_JUMPING_RIGHT:
 		break;
 	case JUMPING_RUNNING_LEFT:
-
 		jumpAngle += JUMP_ANGLE_STEP;
-
 		if (jumpAngle == 180)
 		{
 			endJump = true;
@@ -630,6 +650,35 @@ void Player::update(int deltaTime)
 		move(true, PLAYER_RUN_SPEED);
 		break;
 	case JUMPING_RUNNING_RIGHT:
+		jumpAngle += JUMP_ANGLE_STEP;
+		if (jumpAngle == 180)
+		{
+			endJump = true;
+		}
+		else
+		{
+			posPlayer.y = int(startY - JUMP_RUN_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
+			if (jumpAngle > 90) {
+				if (map->collisionMoveDown(posPlayer,
+					glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
+				{
+					endJump = true;
+				}
+			}
+		}
+		if (sprite->timesLoopedCurrentAnimation > 0 || endJump) {
+			// For posterior jump checks
+			endJump = false;
+			posPlayer.y = startY;
+			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+			{
+				changeState(RUNNING_RIGHT);
+				break;
+			}
+			changeState(END_RUNNING_RIGHT);
+			break;
+		}
+		move(false, PLAYER_RUN_SPEED);
 		break;
 	case START_JUMPING_RUNNING_LEFT:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
@@ -638,10 +687,33 @@ void Player::update(int deltaTime)
 		move(true, PLAYER_RUN_SPEED);
 		break;
 	case START_JUMPING_RUNNING_RIGHT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(JUMPING_RUNNING_RIGHT);
+		}
+		move(false, PLAYER_RUN_SPEED);
 		break;
 	case END_JUMPING_RUNNING_LEFT:
 		break;
 	case END_JUMPING_RUNNING_RIGHT:
+		break;
+	case JUMPING_LEFT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(END_JUMPING_LEFT);
+		}
+		break;
+	case JUMPING_RIGHT:
+		break;
+	case START_JUMPING_LEFT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(JUMPING_LEFT);
+		}
+		break;
+	case START_JUMPING_RIGHT:
+		break;
+	case END_JUMPING_LEFT:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(STANDING_LEFT);
+		}
 		break;
 	default:
 		break;
@@ -751,22 +823,22 @@ string Player::getStateName(PlayerState state) {
 	case END_CROUCHING_RIGHT:
 		return "END_CROUCHING_RIGHT";
 		break;
-	case JUMPING_LEFT:
+	case JUMPING_STANDING_LEFT:
 		return "JUMPING_LEFT";
 		break;
-	case JUMPING_RIGHT:
+	case JUMPING_STANDING_RIGHT:
 		return "JUMPING_RIGHT";
 		break;
-	case START_JUMPING_LEFT:
+	case START_JUMPING_STANDING_LEFT:
 		return "START_JUMPING_LEFT";
 		break;
-	case START_JUMPING_RIGHT:
+	case START_JUMPING_STANDING_RIGHT:
 		return "START_JUMPING_RIGHT";
 		break;
-	case END_JUMPING_LEFT:
+	case START_JUMPING_LEFT:
 		return "END_JUMPING_LEFT";
 		break;
-	case END_JUMPING_RIGHT:
+	case START_JUMPING_RIGHT:
 		return "END_JUMPING_RIGHT";
 		break;
 	case JUMPING_RUNNING_LEFT:
@@ -791,6 +863,10 @@ string Player::getStateName(PlayerState state) {
 		return "WALK_CROUCHING_LEFT";
 	case WALK_CROUCHING_RIGHT:
 		return "WALK_CROUCHING_RIGHT";
+	case FALLING_LEFT:
+		return "FALLING_LEFT";
+	case FALLING_RIGHT:
+		return "FALLING_RIGHT";
 	default:
 		return "UNKNOWN";
 	}
