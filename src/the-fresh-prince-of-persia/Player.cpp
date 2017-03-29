@@ -85,7 +85,6 @@ void addKeyframes(Sprite* sprite, int anim, int xidx, int yidx, int num) {
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, 
 	int intialHealth, UserInterface* ui)
 {
-
 	bJumping = false;
 	isMoving = false;
 	healthPoints = INIT_HEALTH_POINTS;
@@ -147,7 +146,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram,
 	sprite->setAnimationSpeed(JUMP, 8);
 	addKeyframes(sprite, JUMP, 1, 1, 19);
 
-	sprite->changeAnimation(0);
+	
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	Player::changeState(STATE_FALLING);

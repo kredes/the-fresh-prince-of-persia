@@ -34,7 +34,8 @@ void Scene::init()
 	initShaders();
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	ui = new UserInterface();
-	ui->init(INIT_PLAYER_HEALTH);
+	// I am assuming the same shader can be used for the UI
+	ui->init(texProgram, SCREEN_WIDTH, SCREEN_HEIGHT, INIT_PLAYER_HEALTH);
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, INIT_PLAYER_HEALTH, ui);
 	// Set the player's initial position

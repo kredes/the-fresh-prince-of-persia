@@ -8,16 +8,16 @@ class UserInterface
 
 public:
 
-	void init(ShaderProgram &shaderProgram, int initialHealth);
+	void init(ShaderProgram &shaderProgram, int screen_width,
+		int screen_height, int initialHealth);
 	bool update(int deltaTime);
 	void render();
-
 	void updateHealthPoints(int ammount);
-
 private:
+	int initialHealth;
 	int playerHealth;
 	Texture spritesheet;
-	Sprite* sprite;
+	vector <Sprite*> sprite;
 };
 
 #endif //_UI_INCLUDE
