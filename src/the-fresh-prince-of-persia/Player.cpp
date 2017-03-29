@@ -146,145 +146,72 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	sprite->changeAnimation(0);
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
-	Player::changeState(FALLING_RIGHT);
+	Player::changeState(STATE_FALLING);
 }
 
 void Player::changeState(PlayerState nextState) {
 	switch (nextState)
 	{
-	case STANDING_LEFT:
-		sprite->isFacingLeft = true;
+	case STATE_STANDING:
 		sprite->changeAnimation(STAND);
 		break;
-	case STANDING_RIGHT:
-		sprite->isFacingLeft = false;
-		sprite->changeAnimation(STAND);
-		break;
-	case WALKING_LEFT:
+	case STATE_WALKING:
 		sprite->changeAnimation(WALK);
 		break;
-	case WALKING_RIGHT:
-		sprite->changeAnimation(WALK);
-		break;
-	case START_WALKING_RIGHT:
-		sprite->isFacingLeft = false;
-		changeState(WALKING_RIGHT);
+	case STATE_START_WALKING:
+		changeState(STATE_WALKING);
 		return;
-	case START_WALKING_LEFT:
-		sprite->isFacingLeft = true;
-		changeState(WALKING_LEFT);
-		return;
-	case RUNNING_LEFT:
-		sprite->isFacingLeft = true;
+	case STATE_RUNNING:
 		sprite->changeAnimation(RUN);
 		break;
-	case RUNNING_RIGHT:
-		sprite->isFacingLeft = false;
-		sprite->changeAnimation(RUN);
-		break;
-	case START_RUNNING_RIGHT:
-		sprite->isFacingLeft = false;
+	case STATE_START_RUNNING:
 		sprite->changeAnimation(START_RUN);
 		break;
-	case START_RUNNING_LEFT:
-		sprite->isFacingLeft = true;
-		sprite->changeAnimation(START_RUN);
-		break;
-	case END_RUNNING_RIGHT:
-		sprite->isFacingLeft = false;
+	case STATE_END_RUNNING:
 		sprite->changeAnimation(END_RUN);
 		break;
-	case END_RUNNING_LEFT:
-		sprite->isFacingLeft = true;
-		sprite->changeAnimation(END_RUN);
-		break;
-	case TURNING_LEFT:
-		sprite->isFacingLeft = true;
+	case STATE_TURNING:
 		sprite->changeAnimation(TURN);
 		break;
-	case TURNING_RIGHT:
-		sprite->isFacingLeft = false;
-		sprite->changeAnimation(TURN);
-		break;
-	case TURNING_RUNNING_LEFT:
+	case STATE_TURNING_RUNNING:		
 		sprite->changeAnimation(RUN_TURN);
 		break;
-	case TURNING_RUNNING_RIGHT:
-		sprite->changeAnimation(RUN_TURN);
-		break;
-	case CROUCHING_LEFT:
+	case STATE_CROUCHING:
 		sprite->changeAnimation(CROUCH);
 		break;
-	case CROUCHING_RIGHT:
-		sprite->changeAnimation(CROUCH);
-		break;
-	case WALK_CROUCHING_LEFT:
+	case STATE_WALK_CROUCHING:
 		sprite->changeAnimation(WALK_CROUCH);
 		break;
-	case WALK_CROUCHING_RIGHT:
-		sprite->changeAnimation(WALK_CROUCH);
-		break;
-	case START_CROUCHING_LEFT:
+	case STATE_START_CROUCHING:
 		sprite->changeAnimation(START_CROUCH);
 		break;
-	case START_CROUCHING_RIGHT:
-		sprite->changeAnimation(START_CROUCH);
-		break;
-	case END_CROUCHING_LEFT:
+	case STATE_END_CROUCHING:
 		sprite->changeAnimation(END_CROUCH);
 		break;
-	case END_CROUCHING_RIGHT:
-		sprite->changeAnimation(END_CROUCH);
-		break;
-	case JUMPING_STANDING_LEFT:
+	case STATE_JUMPING_STANDING:
 		sprite->changeAnimation(JUMP_STAND, 11, 11);
 		break;
-	case JUMPING_STANDING_RIGHT:
-		sprite->changeAnimation(JUMP_STAND, 11, 11);
+	case STATE_FALLING:
 		break;
-	case FALLING_LEFT:
-		sprite->isFacingLeft = true;
-		break;
-	case FALLING_RIGHT:
-		sprite->isFacingLeft = false;
-		break;
-	case START_JUMPING_STANDING_LEFT:
+	case STATE_START_JUMPING_STANDING:
 		sprite->changeAnimation(JUMP_STAND, 0, 10);
 		break;
-	case START_JUMPING_STANDING_RIGHT:
-		sprite->changeAnimation(JUMP_STAND, 0, 10);
-		break;
-	case JUMPING_RUNNING_LEFT:
+	case STATE_JUMPING_RUNNING:
 		startY = posPlayer.y;
 		jumpAngle = 0;
 		sprite->changeAnimation(JUMP_RUN, 6);
 		break;
-	case JUMPING_RUNNING_RIGHT:
-		startY = posPlayer.y;
-		jumpAngle = 0;
-		sprite->changeAnimation(JUMP_RUN, 6);
-		break;
-	case START_JUMPING_RUNNING_LEFT:
+	case STATE_START_JUMPING_RUNNING:
 		sprite->changeAnimation(JUMP_RUN, 0, 5);
 		break;
-	case START_JUMPING_RUNNING_RIGHT:
-		sprite->changeAnimation(JUMP_RUN, 0, 5);
-		break;
-	case JUMPING_LEFT:
+	case STATE_JUMPING:
 		sprite->changeAnimation(JUMP, 8, 12);
 		break;
-	case JUMPING_RIGHT:
-
-		break;
-	case START_JUMPING_LEFT:
+	case STATE_START_JUMPING:
 		sprite->changeAnimation(JUMP, 0, 7);
 		break;
-	case START_JUMPING_RIGHT:
-		break;
-	case END_JUMPING_LEFT:
+	case STATE_END_JUMPING:
 		sprite->changeAnimation(JUMP, 13, 18);
-		break;
-	case END_JUMPING_RUNNING_RIGHT:
 		break;
 	default:
 		cout << "changeState: State not recognized" << endl;
@@ -294,268 +221,149 @@ void Player::changeState(PlayerState nextState) {
 	cout << "Player state changed to: " << getStateName(currentState) << endl;
 }
 
+bool inputToCurrentDirection(bool facingLeft) {
+	return (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && facingLeft) ||
+		(Game::instance().getSpecialKey(GLUT_KEY_RIGHT) && !facingLeft);
+}
+
+bool inputToOppositeDirection(bool facingLeft) {
+	return (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !facingLeft) ||
+		(Game::instance().getSpecialKey(GLUT_KEY_RIGHT) && facingLeft);
+}
+
 void Player::update(int deltaTime)
 {
 	bool endJump = false;
 	switch (currentState)
 	{
-	case STANDING_LEFT:
-		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
-		{
+	case STATE_STANDING:
+		if (inputToCurrentDirection(sprite->isFacingLeft)) {
 			if (Game::instance().getSpecialKey(GLUT_KEY_F1)) {
-				changeState(START_WALKING_LEFT);
+				changeState(STATE_WALKING);
 				break;
 			}
-			changeState(START_RUNNING_LEFT);
+			changeState(STATE_START_RUNNING);
 		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
-		{
-			changeState(TURNING_RIGHT);
+		else if(inputToOppositeDirection(sprite->isFacingLeft)){
+			sprite->isFacingLeft = !sprite->isFacingLeft;
+			changeState(STATE_TURNING);
 		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
+		else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
 		{
-			changeState(START_CROUCHING_LEFT);
+			changeState(STATE_START_CROUCHING);
 		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_UP))
+		else if (Game::instance().getSpecialKey(GLUT_KEY_UP))
 		{
-			changeState(START_JUMPING_STANDING_LEFT);
+			changeState(STATE_START_JUMPING_STANDING);
 		}
 		break;
-	case STANDING_RIGHT:
-		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
-		{
-			changeState(TURNING_LEFT);
-		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
-		{
-			if (Game::instance().getSpecialKey(GLUT_KEY_F1)) {
-				changeState(START_WALKING_RIGHT);
-				break;
-			}
-			changeState(START_RUNNING_RIGHT);
-		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
-		{
-			changeState(START_CROUCHING_RIGHT);
-		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_UP))
-		{
-			changeState(START_JUMPING_STANDING_RIGHT);
-		}
-		break;
-	case WALKING_LEFT:
+	case STATE_WALKING:
 		if (sprite->isAtEndingKeyframe()) {
-			changeState(STANDING_LEFT);
+			changeState(STATE_STANDING);
 		}
-		move(true, PLAYER_WALK_SPEED);
+		move(sprite->isFacingLeft, PLAYER_WALK_SPEED);
 		break;
-	case WALKING_RIGHT:
+	case STATE_START_WALKING:
+		break;
+	case STATE_RUNNING:
 		if (sprite->isAtEndingKeyframe()) {
-			changeState(STANDING_RIGHT);
-		}
-		move(false, PLAYER_WALK_SPEED);
-		break;
-	case START_WALKING_RIGHT:
-		break;
-	case START_WALKING_LEFT:
-		break;
-	case RUNNING_LEFT:
-		if (sprite->isAtEndingKeyframe()) {
-			if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+			if (!inputToCurrentDirection(sprite->isFacingLeft))
 			{
-				changeState(END_RUNNING_LEFT);
+				changeState(STATE_END_RUNNING);
 				break;
 			}
 			if (Game::instance().getSpecialKey(GLUT_KEY_UP))
 			{
-				changeState(START_JUMPING_RUNNING_LEFT);
+				changeState(STATE_START_JUMPING_RUNNING);
 				break;
 			}
 		}
-		move(true, PLAYER_RUN_SPEED);
+		move(sprite->isFacingLeft, PLAYER_RUN_SPEED);
 		break;
-	case RUNNING_RIGHT:
-		if (sprite->isAtEndingKeyframe()) {
-			if (!Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
-			{
-				changeState(END_RUNNING_RIGHT);
-				break;
-			}
-			if (Game::instance().getSpecialKey(GLUT_KEY_UP))
-			{
-				changeState(START_JUMPING_RUNNING_RIGHT);
-				break;
-			}
-		}
-		move(false, PLAYER_RUN_SPEED);
-		break;
-	case START_RUNNING_RIGHT:
-		
-
+	case STATE_START_RUNNING:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
-			if (!Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+			if (!inputToCurrentDirection(sprite->isFacingLeft))
 			{
-				changeState(END_RUNNING_RIGHT);
+				changeState(STATE_END_RUNNING);
 				break;
-			}		
-
-			changeState(RUNNING_RIGHT);
+			}
+			changeState(STATE_RUNNING);
 		}
-		move(false, PLAYER_WALK_SPEED);
+		move(sprite->isFacingLeft, PLAYER_WALK_SPEED);
 		break;
-	case START_RUNNING_LEFT:
-		if (Game::instance().getSpecialKey(GLUT_KEY_UP)) {
-			changeState(START_JUMPING_LEFT);
-			break;
-		}
+	case STATE_END_RUNNING:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
-			// If we are not pressing the left key, there is no point on keeping
-			// running
-			if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+			if (inputToOppositeDirection(sprite->isFacingLeft)) {
+				changeState(STATE_TURNING_RUNNING);
+				break;
+			}
+			changeState(STATE_STANDING);
+		}
+		move(sprite->isFacingLeft, PLAYER_WALK_SPEED);
+		break;
+	case STATE_TURNING:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			changeState(STATE_STANDING);
+		}
+		break;
+	case STATE_TURNING_RUNNING:
+		if (sprite->timesLoopedCurrentAnimation > 0) {
+			sprite->isFacingLeft = !sprite->isFacingLeft;
+			if (inputToCurrentDirection(sprite->isFacingLeft))
 			{
-				changeState(END_RUNNING_LEFT);
+				changeState(STATE_RUNNING);
 				break;
 			}
-			changeState(RUNNING_LEFT);
-		}
-		move(true, PLAYER_WALK_SPEED);
-		break;
-	case END_RUNNING_RIGHT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
-				changeState(TURNING_RUNNING_LEFT);
-				break;
-			}
-			changeState(STANDING_RIGHT);
-		}
-		move(false, PLAYER_WALK_SPEED);
-		break;
-	case END_RUNNING_LEFT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
-				changeState(TURNING_RUNNING_RIGHT);
-				break;
-			}
-			changeState(STANDING_LEFT);
-		}
-		move(true, PLAYER_WALK_SPEED);
-		break;
-	case TURNING_LEFT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			changeState(STANDING_LEFT);
-		}
-		break;
-	case TURNING_RIGHT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			changeState(STANDING_RIGHT);
-		}
-		break;
-	case TURNING_RUNNING_LEFT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+			if (inputToOppositeDirection(sprite->isFacingLeft))
 			{
-				changeState(RUNNING_LEFT);
+				sprite->isFacingLeft = !sprite->isFacingLeft;
+				changeState(STATE_TURNING_RUNNING);
 				break;
 			}
-			if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
-			{
-				changeState(TURNING_RUNNING_RIGHT);
-				break;
-			}
-			changeState(END_RUNNING_LEFT);
+			changeState(STATE_END_RUNNING);
 		}
 		break;
-	case TURNING_RUNNING_RIGHT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
-			{
-				changeState(TURNING_RUNNING_LEFT);
-				break;
-			}
-			if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
-			{
-				changeState(RUNNING_RIGHT);
-				break;
-			}
-			changeState(END_RUNNING_RIGHT);
-		}
-		break;
-	case CROUCHING_LEFT:
+	case STATE_CROUCHING:
 		if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
-			changeState(END_CROUCHING_LEFT);
+			changeState(STATE_END_CROUCHING);
 		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
-			changeState(WALK_CROUCHING_LEFT);
-		}
-		break;
-	case CROUCHING_RIGHT:
-		if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
-			changeState(END_CROUCHING_RIGHT);
-		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
-			changeState(WALK_CROUCHING_RIGHT);
+		if (inputToCurrentDirection(sprite->isFacingLeft)) {
+			changeState(STATE_WALK_CROUCHING);
 		}
 		break;
-	case WALK_CROUCHING_LEFT:
+	case STATE_WALK_CROUCHING:
 		if (sprite->isAtEndingKeyframe()) {
 			if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
-				changeState(END_CROUCHING_LEFT);
+				changeState(STATE_END_CROUCHING);
 				break;
 			}
-			if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
-				changeState(CROUCHING_LEFT);
-				break;
-			}
-		}
-		move(true, PLAYER_WALK_SPEED);
-		break;
-	case WALK_CROUCHING_RIGHT:
-		if (sprite->isAtEndingKeyframe()) {
-			if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
-				changeState(END_CROUCHING_RIGHT);
-				break;
-			}
-			if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
-				changeState(CROUCHING_RIGHT);
+			if (!inputToCurrentDirection(sprite->isFacingLeft)) {
+				changeState(STATE_CROUCHING);
 				break;
 			}
 		}
-		move(false, PLAYER_WALK_SPEED);
+		move(sprite->isFacingLeft, PLAYER_WALK_SPEED);
 		break;
-	case START_CROUCHING_LEFT:
+	case STATE_START_CROUCHING:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
 			if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
-				changeState(END_CROUCHING_LEFT);
+				changeState(STATE_END_CROUCHING);
 				break;
 			}
-			changeState(CROUCHING_LEFT);
+			changeState(STATE_CROUCHING);
 		}
 		break;
-	case START_CROUCHING_RIGHT:
+	case STATE_END_CROUCHING:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
-			if (!Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
-				changeState(END_CROUCHING_RIGHT);
-				break;
-			}
-			changeState(CROUCHING_RIGHT);
+			changeState(STATE_STANDING);
 		}
 		break;
-	case END_CROUCHING_LEFT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			changeState(STANDING_LEFT);
-		}
-		break;
-	case END_CROUCHING_RIGHT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			changeState(STANDING_RIGHT);
-		}
-		break;
-	case JUMPING_STANDING_LEFT:
+	case STATE_JUMPING_STANDING:
 		jumpAngle += JUMP_ANGLE_STEP;
 		if (jumpAngle == 180)
 		{
 			posPlayer.y = startY;
-			changeState(FALLING_LEFT);
+			changeState(STATE_FALLING);
 		}
 		else
 		{
@@ -564,92 +372,27 @@ void Player::update(int deltaTime)
 				if (map->collisionMoveDown(posPlayer,
 					glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
 				{
-					changeState(START_CROUCHING_LEFT);
+					changeState(STATE_START_CROUCHING);
 				}
 			}
 
 		}
 		break;
-	case JUMPING_STANDING_RIGHT:
-		jumpAngle += JUMP_ANGLE_STEP;
-		if (jumpAngle == 180)
-		{
-			posPlayer.y = startY;
-			changeState(FALLING_RIGHT);
-		}
-		else
-		{
-			posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
-			if (jumpAngle > 90) {
-				if (map->collisionMoveDown(posPlayer,
-					glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
-				{
-					changeState(START_CROUCHING_RIGHT);
-				}
-			}
-		}
-		break;
-	case FALLING_LEFT:
+	case STATE_FALLING:
 		posPlayer.y += FALL_STEP;
 		if (map->collisionMoveDown(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
 		{
-			changeState(START_CROUCHING_LEFT);
+			changeState(STATE_START_CROUCHING);
 		}
 		break;
-	case FALLING_RIGHT:
-		posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
-		{
-			changeState(START_CROUCHING_RIGHT);
-		}
-		break;
-	case START_JUMPING_STANDING_LEFT:
+	case STATE_START_JUMPING_STANDING:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
 			jumpAngle = 0;
 			startY = posPlayer.y;
-			changeState(JUMPING_STANDING_LEFT);
+			changeState(STATE_JUMPING_STANDING);
 		}
 		break;
-	case START_JUMPING_STANDING_RIGHT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			jumpAngle = 0;
-			startY = posPlayer.y;
-			changeState(JUMPING_STANDING_RIGHT);
-		}
-		break;
-	case JUMPING_RUNNING_LEFT:
-		jumpAngle += JUMP_ANGLE_STEP;
-		if (jumpAngle == 180)
-		{
-			endJump = true;
-		}
-		else
-		{
-			posPlayer.y = int(startY - JUMP_RUN_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
-			if (jumpAngle > 90) {
-				if (map->collisionMoveDown(posPlayer,
-					glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
-				{
-					endJump = true;
-				}
-			}
-		}
-
-		if (sprite->timesLoopedCurrentAnimation > 0 || endJump) {
-			// For posterior jump checks
-			endJump = false;
-			posPlayer.y = startY;
-			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
-			{
-				changeState(RUNNING_LEFT);
-				break;
-			}
-			changeState(END_RUNNING_LEFT);
-			break;
-		}
-		move(true, PLAYER_RUN_SPEED);
-		break;
-	case JUMPING_RUNNING_RIGHT:
+	case STATE_JUMPING_RUNNING:
 		jumpAngle += JUMP_ANGLE_STEP;
 		if (jumpAngle == 180)
 		{
@@ -670,49 +413,37 @@ void Player::update(int deltaTime)
 			// For posterior jump checks
 			endJump = false;
 			posPlayer.y = startY;
-			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+			if (inputToCurrentDirection(sprite->isFacingLeft))
 			{
-				changeState(RUNNING_RIGHT);
+				changeState(STATE_RUNNING);
 				break;
 			}
-			changeState(END_RUNNING_RIGHT);
+			changeState(STATE_END_RUNNING);
 			break;
 		}
-		move(false, PLAYER_RUN_SPEED);
+		move(sprite->isFacingLeft, PLAYER_RUN_SPEED);
 		break;
-	case START_JUMPING_RUNNING_LEFT:
+	case STATE_START_JUMPING_RUNNING:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
-			changeState(JUMPING_RUNNING_LEFT);
+			changeState(STATE_JUMPING_RUNNING);
 		}
-		move(true, PLAYER_RUN_SPEED);
+		move(sprite->isFacingLeft, PLAYER_RUN_SPEED);
 		break;
-	case START_JUMPING_RUNNING_RIGHT:
+	case STATE_END_JUMPING_RUNNING:
+		break;
+	case STATE_JUMPING:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
-			changeState(JUMPING_RUNNING_RIGHT);
-		}
-		move(false, PLAYER_RUN_SPEED);
-		break;
-	case END_JUMPING_RUNNING_LEFT:
-		break;
-	case END_JUMPING_RUNNING_RIGHT:
-		break;
-	case JUMPING_LEFT:
-		if (sprite->timesLoopedCurrentAnimation > 0) {
-			changeState(END_JUMPING_LEFT);
+			changeState(STATE_END_JUMPING);
 		}
 		break;
-	case JUMPING_RIGHT:
-		break;
-	case START_JUMPING_LEFT:
+	case STATE_START_JUMPING:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
-			changeState(JUMPING_LEFT);
+			changeState(STATE_JUMPING);
 		}
 		break;
-	case START_JUMPING_RIGHT:
-		break;
-	case END_JUMPING_LEFT:
+	case STATE_END_JUMPING:
 		if (sprite->timesLoopedCurrentAnimation > 0) {
-			changeState(STANDING_LEFT);
+			changeState(STATE_STANDING);
 		}
 		break;
 	default:
@@ -729,12 +460,12 @@ void Player::move(bool isMovingLeft, int speed) {
 
 	int stride = isMovingLeft ? -speed : speed;
 	posPlayer.x += stride;
-	if (map->collisionMoveLeft(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y)))
+	if (map->collisionMoveLeft(posPlayer, 
+			glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y)) ||
+		map->collisionMoveRight(posPlayer, 
+			glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y)))
 	{
 		posPlayer.x -= stride;
-		//changeState(
-		//	isMovingLeft ? STANDING_LEFT : STANDING_RIGHT
-		//);
 	}
 }
 
@@ -757,118 +488,46 @@ void Player::setPosition(const glm::vec2 &pos)
 string Player::getStateName(PlayerState state) {
 	switch (state)
 	{
-	case STANDING_LEFT:
-		return "STANDING_LEFT";
-		break;
-	case STANDING_RIGHT:
-		return "STANDING_RIGHT";
-		break;
-	case WALKING_LEFT:
-		return "WALKING_LEFT";
-		break;
-	case WALKING_RIGHT:
-		return "WALKING_RIGHT";
-		break;
-	case START_WALKING_RIGHT:
-		return "START_WALKING_RIGHT";
-		break;
-	case START_WALKING_LEFT:
-		return "START_WALKING_LEFT";
-		break;
-	case RUNNING_LEFT:
-		return "RUNNING_LEFT";
-		break;
-	case RUNNING_RIGHT:
-		return "RUNNING_RIGHT";
-		break;
-	case START_RUNNING_RIGHT:
-		return "START_RUNNING_RIGHT";
-		break;
-	case START_RUNNING_LEFT:
-		return "START_RUNNING_LEFT";
-		break;
-	case END_RUNNING_RIGHT:
-		return "END_RUNNING_RIGHT";
-		break;
-	case END_RUNNING_LEFT:
-		return "END_RUNNING_LEFT";
-		break;
-	case TURNING_LEFT:
-		return "TURNING_LEFT";
-		break;
-	case TURNING_RIGHT:
-		return "TURNING_RIGHT";
-		break;
-	case TURNING_RUNNING_LEFT:
-		return "TURNING_RUNNING_LEFT";
-		break;
-	case TURNING_RUNNING_RIGHT:
-		return "TURNING_RUNNING_RIGHT";
-		break;
-	case CROUCHING_LEFT:
-		return "CROUCHING_LEFT";
-		break;
-	case CROUCHING_RIGHT:
-		return "CROUCHING_RIGHT";
-		break;
-	case START_CROUCHING_LEFT:
-		return "START_CROUCHING_LEFT";
-		break;
-	case START_CROUCHING_RIGHT:
-		return "START_CROUCHING_RIGHT";
-		break;
-	case END_CROUCHING_LEFT:
-		return "END_CROUCHING_LEFT";
-		break;
-	case END_CROUCHING_RIGHT:
-		return "END_CROUCHING_RIGHT";
-		break;
-	case JUMPING_STANDING_LEFT:
-		return "JUMPING_LEFT";
-		break;
-	case JUMPING_STANDING_RIGHT:
-		return "JUMPING_RIGHT";
-		break;
-	case START_JUMPING_STANDING_LEFT:
-		return "START_JUMPING_LEFT";
-		break;
-	case START_JUMPING_STANDING_RIGHT:
-		return "START_JUMPING_RIGHT";
-		break;
-	case START_JUMPING_LEFT:
-		return "END_JUMPING_LEFT";
-		break;
-	case START_JUMPING_RIGHT:
-		return "END_JUMPING_RIGHT";
-		break;
-	case JUMPING_RUNNING_LEFT:
-		return "JUMPING_RUNNING_LEFT";
-		break;
-	case JUMPING_RUNNING_RIGHT:
-		return "JUMPING_RUNNING_RIGHT";
-		break;
-	case START_JUMPING_RUNNING_LEFT:
-		return "START_JUMPING_RUNNING_LEFT";
-		break;
-	case START_JUMPING_RUNNING_RIGHT:
-		return "START_JUMPING_RUNNING_RIGHT";
-		break;
-	case END_JUMPING_RUNNING_LEFT:
-		return "END_JUMPING_RUNNING_LEFT";
-		break;
-	case END_JUMPING_RUNNING_RIGHT:
-		return "END_JUMPING_RUNNING_RIGHT";
-		break;
-	case WALK_CROUCHING_LEFT:
-		return "WALK_CROUCHING_LEFT";
-	case WALK_CROUCHING_RIGHT:
-		return "WALK_CROUCHING_RIGHT";
-	case FALLING_LEFT:
-		return "FALLING_LEFT";
-	case FALLING_RIGHT:
-		return "FALLING_RIGHT";
+	case STATE_STANDING:
+		return "STATE_STANDING";
+	case STATE_WALKING:
+		return "STATE_WALKING";
+	case STATE_START_WALKING:
+		return "STATE_START_WALKING_RIGHT";
+	case STATE_RUNNING:
+		return "STATE_RUNNING";
+	case STATE_START_RUNNING:
+		return "STATE_START_RUNNING_RIGHT";
+	case STATE_END_RUNNING:
+		return "STATE_END_RUNNING_RIGHT";
+	case STATE_TURNING:
+		return "STATE_TURNING";
+	case STATE_TURNING_RUNNING:
+		return "STATE_TURNING_RUNNING";
+	case STATE_CROUCHING:
+		return "STATE_CROUCHING";
+	case STATE_START_CROUCHING:
+		return "STATE_START_CROUCHING";
+	case STATE_END_CROUCHING:
+		return "STATE_END_CROUCHING";
+	case STATE_JUMPING_STANDING:
+		return "STATE_JUMPING";
+	case STATE_START_JUMPING_STANDING:
+		return "STATE_START_JUMPING";
+	case STATE_START_JUMPING:
+		return "STATE_END_JUMPING";
+	case STATE_JUMPING_RUNNING:
+		return "STATE_JUMPING_RUNNING";
+	case STATE_START_JUMPING_RUNNING:
+		return "STATE_START_JUMPING_RUNNING";
+	case STATE_END_JUMPING_RUNNING:
+		return "STATE_END_JUMPING_RUNNING";
+	case STATE_WALK_CROUCHING:
+		return "STATE_WALK_CROUCHING";
+	case STATE_FALLING:
+		return "STATE_FALLING";
 	default:
-		return "UNKNOWN";
+		return "STATE_UNKNOWN";
 	}
 }
 
