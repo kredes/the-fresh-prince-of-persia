@@ -8,26 +8,30 @@
 
 // Player is basically a Sprite that represents the player. As such it has
 // all properties it needs to track its movement, jumping, and collisions.
-
-
 class Player
 {
-
 public:
-	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram);
+	
+	void init(const glm::ivec2 & tileMapPos, ShaderProgram & shaderProgram, 
+		int intialHealth, UserInterface* ui);
 	void update(int deltaTime);
 	void move(bool isMovingfLeft, int speed);
+	
 	void render();
+	
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
 
+	void addDamage(int ammount);
 	
 private:
+	int healthPoints;
 	bool bJumping;
 	glm::ivec2 tileMapDispl, posPlayer;
 	int jumpAngle, startY;
 	Texture spritesheet;
 	Sprite *sprite;
+	UserInterface *ui;
 	TileMap *map;
 	// For the tile-based movement
 	bool isMoving;

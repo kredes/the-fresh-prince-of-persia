@@ -11,6 +11,8 @@
 #define INIT_PLAYER_X_TILES 2
 #define INIT_PLAYER_Y_TILES 2
 
+#define INIT_PLAYER_HEALTH 3
+
 
 Scene::Scene()
 {
@@ -31,8 +33,10 @@ void Scene::init()
 {
 	initShaders();
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	ui = new UserInterface();
+	ui->init(INIT_PLAYER_HEALTH);
 	player = new Player();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
+	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, INIT_PLAYER_HEALTH, ui);
 	// Set the player's initial position
 	player->setPosition(
 		glm::vec2(
@@ -64,6 +68,7 @@ void Scene::render()
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
 	player->render();
+	ui->render();
 }
 
 void Scene::initShaders()
