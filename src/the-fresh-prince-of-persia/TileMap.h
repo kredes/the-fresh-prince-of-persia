@@ -3,8 +3,11 @@
 
 
 #include <glm/glm.hpp>
+#include <vector>
 #include "Texture.h"
 #include "ShaderProgram.h"
+
+typedef vector<vector<int>> Map;
 
 
 // Class Tilemap is capable of loading a tile map from a text file in a very
@@ -38,15 +41,14 @@ private:
 	void prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program);
 
 private:
-	GLuint vao;
-	GLuint vbo;
+	vector<GLuint> vaos;
+	vector<GLuint> vbos;
 	GLint posLocation, texCoordLocation;
 	glm::ivec2 position, mapSize, tilesheetSize;
 	int tileSizeX, tileSizeY, blockSizeX, blockSizeY;
 	Texture tilesheet;
 	glm::vec2 tileTexSize;
-	int *map;
-
+	Map map;
 };
 
 

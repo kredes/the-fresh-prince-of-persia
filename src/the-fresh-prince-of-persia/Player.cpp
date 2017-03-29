@@ -460,6 +460,7 @@ void Player::move(bool isMovingLeft, int speed) {
 
 	int stride = isMovingLeft ? -speed : speed;
 	posPlayer.x += stride;
+	/*
 	if (map->collisionMoveLeft(posPlayer, 
 			glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y)) ||
 		map->collisionMoveRight(posPlayer, 
@@ -467,6 +468,16 @@ void Player::move(bool isMovingLeft, int speed) {
 	{
 		posPlayer.x -= stride;
 	}
+	*/
+	if (
+		isMovingLeft && map->collisionMoveLeft(posPlayer, glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y)) ||
+		!isMovingLeft && map->collisionMoveRight(posPlayer, glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y)))
+	{
+		posPlayer.x -= stride;
+	}
+	else if (!map->collisionMoveDown(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y));
+		changeState(STATE_FALLING);
+	
 }
 
 void Player::render()

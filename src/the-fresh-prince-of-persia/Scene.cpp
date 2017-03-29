@@ -8,8 +8,8 @@
 #define SCREEN_X -64
 #define SCREEN_Y -24
 
-#define INIT_PLAYER_X_TILES 2
-#define INIT_PLAYER_Y_TILES 2
+#define INIT_PLAYER_X_TILES 7
+#define INIT_PLAYER_Y_TILES 1
 
 
 Scene::Scene()
@@ -30,7 +30,7 @@ Scene::~Scene()
 void Scene::init()
 {
 	initShaders();
-	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
 	// Set the player's initial position
