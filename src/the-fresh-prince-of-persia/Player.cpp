@@ -83,11 +83,12 @@ void addKeyframes(Sprite* sprite, int anim, int xidx, int yidx, int num) {
 }
 
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, 
-	int intialHealth, UserInterface* ui)
+	int intialHealth, UserInterface* _ui)
 {
 	bJumping = false;
 	isMoving = false;
 	healthPoints = INIT_HEALTH_POINTS;
+	ui = _ui;
 	// No movement
 	movementDir = -1;
 	initMovementPos = posPlayer.x;
@@ -494,7 +495,7 @@ void Player::setPosition(const glm::vec2 &pos)
 void Player::addDamage(int ammount)
 {
 	healthPoints -= ammount;
-
+	ui->updateHealthPoints(healthPoints);
 	cout << "Player recieved " << ammount << " points of damage " <<
 		healthPoints << " health points left." << endl;
 }

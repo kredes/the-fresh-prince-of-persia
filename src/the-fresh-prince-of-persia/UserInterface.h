@@ -16,8 +16,10 @@ public:
 private:
 	int initialHealth;
 	int playerHealth;
-	Texture spritesheet;
-	vector <Sprite*> sprite;
+	Texture health_points_spritesheet;
+	Texture ui_back_spritesheet;
+	vector <Sprite*> health_point_sprites;
+	Sprite* ui_back_sprite;
 };
 
 #endif //_UI_INCLUDE
