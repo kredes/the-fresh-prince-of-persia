@@ -10,7 +10,7 @@
 #define JUMP_HEIGHT 64
 #define JUMP_RUN_HEIGHT 24
 #define FALL_STEP 4
-#define Y_PLAYER_OFFSET -15
+#define Y_PLAYER_OFFSET 0
 #define PLAYER_STEP 64
 
 #define X_TILES 12
@@ -196,6 +196,7 @@ void Player::changeState(PlayerState nextState) {
 		sprite->changeAnimation(JUMP_STAND, 11, 11);
 		break;
 	case STATE_FALLING:
+		sprite->changeAnimation(JUMP_STAND, 11, 11);
 		break;
 	case STATE_START_JUMPING_STANDING:
 		sprite->changeAnimation(JUMP_STAND, 0, 10);
@@ -464,12 +465,16 @@ void Player::move(bool isMovingLeft, int speed) {
 
 	int stride = isMovingLeft ? -speed : speed;
 	posPlayer.x += stride;
-	if (map->collisionMoveLeft(posPlayer, 
-			glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y)) ||
-		map->collisionMoveRight(posPlayer, 
-			glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y)))
+	if (
+		isMovingLeft && map->collisionMoveLeft(posPlayer, glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y)) ||
+		!isMovingLeft && map->collisionMoveRight(posPlayer, glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y)))
 	{
 		posPlayer.x -= stride;
+	}
+	else if (!map->collisionMoveDown(posPlayer,
+		glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y), &posPlayer.y))
+	{
+		changeState(STATE_FALLING);
 	}
 }
 

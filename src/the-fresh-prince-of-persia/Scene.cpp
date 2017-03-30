@@ -8,8 +8,8 @@
 #define SCREEN_X -64
 #define SCREEN_Y -24
 
-#define INIT_PLAYER_X_TILES 2
-#define INIT_PLAYER_Y_TILES 2
+#define INIT_PLAYER_X_TILES 7
+#define INIT_PLAYER_Y_TILES 1
 
 #define INIT_PLAYER_HEALTH 3
 
@@ -32,7 +32,7 @@ Scene::~Scene()
 void Scene::init()
 {
 	initShaders();
-	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	ui = new UserInterface();
 	// I am assuming the same shader can be used for the UI
 	ui->init(texProgram, SCREEN_WIDTH, SCREEN_HEIGHT, INIT_PLAYER_HEALTH);
