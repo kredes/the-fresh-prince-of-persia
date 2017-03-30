@@ -4,7 +4,7 @@
 #include <GL/glut.h>
 #include "Player.h"
 #include "Game.h"
-
+#include "UserInterface.h"
 
 #define JUMP_ANGLE_STEP 4
 #define JUMP_HEIGHT 64
@@ -25,6 +25,8 @@
 // Bounding box, for collisions
 #define PLAYER_BB_SIZE_X 84
 #define PLAYER_BB_SIZE_Y 20
+
+#define INIT_HEALTH_POINTS 3;
 
 #define SHIFT_KEY 112
 
@@ -80,11 +82,13 @@ void addKeyframes(Sprite* sprite, int anim, int xidx, int yidx, int num) {
 	}
 }
 
-void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
+void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, 
+	int intialHealth, UserInterface* _ui)
 {
-
 	bJumping = false;
 	isMoving = false;
+	healthPoints = INIT_HEALTH_POINTS;
+	ui = _ui;
 	// No movement
 	movementDir = -1;
 	initMovementPos = posPlayer.x;
@@ -143,7 +147,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	sprite->setAnimationSpeed(JUMP, 8);
 	addKeyframes(sprite, JUMP, 1, 1, 19);
 
-	sprite->changeAnimation(0);
+	
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	Player::changeState(STATE_FALLING);
@@ -483,6 +487,14 @@ void Player::setPosition(const glm::vec2 &pos)
 {
 	posPlayer = pos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
+}
+
+void Player::addDamage(int ammount)
+{
+	healthPoints -= ammount;
+	ui->updateHealthPoints(healthPoints);
+	cout << "Player recieved " << ammount << " points of damage " <<
+		healthPoints << " health points left." << endl;
 }
 
 string Player::getStateName(PlayerState state) {
