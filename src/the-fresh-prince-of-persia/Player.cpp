@@ -196,9 +196,6 @@ void Player::changeState(PlayerState nextState) {
 		sprite->changeAnimation(JUMP_STAND, 11, 11);
 		break;
 	case STATE_FALLING:
-		// This is for debugging purposes only 
-		// FIXME
-		addDamage(1);
 		break;
 	case STATE_START_JUMPING_STANDING:
 		sprite->changeAnimation(JUMP_STAND, 0, 10);
