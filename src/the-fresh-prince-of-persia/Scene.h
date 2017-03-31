@@ -25,9 +25,16 @@ public:
 	void render();
 
 private:
+	void updateCamera(int x, int y);
 	void initShaders();
 
 private:
+	// From where the player came to the current screen
+	// 0 -> left
+	// 1 -> right
+	// 2 -> up
+	// 3 -> down
+	int playerOriginX;
 	TileMap *map;
 	Player *player;
 	UserInterface *ui;
