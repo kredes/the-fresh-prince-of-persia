@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include "ShaderProgram.h"
 #include "TileMap.h"
+#include "TextMap.h"
 #include "Player.h"
 #include "UserInterface.h"
 
@@ -17,23 +18,39 @@ class Scene
 {
 
 public:
+	class KeyListener {
+		virtual void onKeyPressed(int key) = 0;
+		virtual void onKeyReleased(int key) = 0;
+		virtual void onSpecialKeyPressed(int key) = 0;
+		virtual void onSpecialKeyReleased(int key) = 0;
+	};
+
 	Scene();
+	Scene(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player);
 	~Scene();
 
 	void init();
-	void update(int deltaTime);
+	// If there is an scene change, it returns the new Scene to show.
+	// Otherwise, returns itself.
+	Scene* update(int deltaTime);
 	void render();
+	void changeScene(Scene *newScene);
+
+	void setKeyListener(KeyListener *listener);
+	KeyListener *keyListener;
 
 private:
 	void initShaders();
 
 private:
 	TileMap *map;
+	TextMap *text;
 	Player *player;
 	UserInterface *ui;
 	ShaderProgram texProgram;
 	float currentTime;
 	glm::mat4 projection;
+	Scene *nextScene;
 
 };
 

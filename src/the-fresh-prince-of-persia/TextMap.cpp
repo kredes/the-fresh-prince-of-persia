@@ -9,21 +9,21 @@
 
 using namespace std;
 
+/*
 TextMap *TextMap::createTextMap(const glm::vec2 screenSize, const glm::vec2 &minCoords, ShaderProgram &program)
 {
 	TextMap *map = new TextMap(screenSize, minCoords, program);
 	return map;
 }
+*/
 
-
-TextMap::TextMap(const glm::vec2 screenSize, const glm::vec2 &_minCoords, ShaderProgram &_program)
-{
-	minCoords = minCoords;
-	program = program;
+void TextMap::init(const glm::vec2 screenSize, const glm::vec2 &_minCoords, ShaderProgram &_program) {
+	minCoords = _minCoords;
+	program = _program;
 
 	initCharMap();
 
-	tileSizeX = tileSizeY = blockSizeX = blockSizeY = 64;
+	tileSizeX = tileSizeY = blockSizeX = blockSizeY = 32;
 	tilesheetSize.x = 16;
 	tilesheetSize.y = 16;
 	tileTexSize = glm::vec2(1.f / tilesheetSize.x, 1.f / tilesheetSize.y);
@@ -37,6 +37,10 @@ TextMap::TextMap(const glm::vec2 screenSize, const glm::vec2 &_minCoords, Shader
 	prepareMap(screenSize);
 }
 
+TextMap::TextMap()
+{
+}
+
 TextMap::~TextMap()
 {
 	/*if (m != NULL)
@@ -46,8 +50,7 @@ TextMap::~TextMap()
 
 void TextMap::addText(const glm::vec2 coords, string text) {
 	int index = (coords.y*mapSize.y + coords.x);
-	for (int i = 0; i < text.size(); ++i) {
-		index += i;
+	for (int i = 0; i < text.size(); ++i, ++index) {
 		if (index < m.size()) {
 			m[index] = CHARS[text[i]];
 		}
@@ -105,10 +108,14 @@ void TextMap::prepareArrays()
 	for (int j = 0; j < mapSize.y; j++) {
 		for (int i = 0; i < mapSize.x; i++) {
 			tile = m[j * mapSize.x + i];
+			if (j * mapSize.x + i == 50) {
+				cout << "TEST" << endl;
+			}
 			if (tile != 0) {
 				// Non-empty tile
 				nTiles++;
-				posTile = glm::vec2(minCoords.x + i * tileSizeX, minCoords.y + j * tileSizeY);
+				//posTile = glm::vec2(-minCoords.x/4 + i * tileSizeX, -minCoords.y/4 + j * tileSizeY);
+				posTile = glm::vec2(i * tileSizeX, j * tileSizeY);
 				// Generating texture coordinates
 				texCoordTile[0] = glm::vec2(
 					float((tile - 1) % tilesheetSize.x) / tilesheetSize.x,
@@ -151,7 +158,7 @@ void TextMap::prepareArrays()
 			}
 		}
 
-		if (nTiles == 0) return;
+		if (nTiles == 0) continue;
 
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);

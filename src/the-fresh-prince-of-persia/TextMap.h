@@ -18,9 +18,9 @@ class TextMap
 
 public:
 	// Tile maps can only be created inside an OpenGL context
-	static TextMap *createTextMap(const glm::vec2 screenSize, const glm::vec2 &minCoords, ShaderProgram &program);
+	void init(const glm::vec2 screenSize, const glm::vec2 &minCoords, ShaderProgram &program);
 
-	TextMap(const glm::vec2 screenSize, const glm::vec2 &minCoords, ShaderProgram &program);
+	TextMap();
 	~TextMap();
 
 	void render() const;

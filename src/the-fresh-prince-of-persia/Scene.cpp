@@ -5,8 +5,11 @@
 #include "Game.h"
 
 // This changes the initial offset of the tiles
-#define SCREEN_X -64
-#define SCREEN_Y -24
+//#define SCREEN_X -64
+//#define SCREEN_Y -24
+
+#define SCREEN_X 0
+#define SCREEN_Y -120
 
 #define INIT_PLAYER_X_TILES 7
 #define INIT_PLAYER_Y_TILES 1
@@ -14,10 +17,16 @@
 #define INIT_PLAYER_HEALTH 3
 
 
-Scene::Scene()
+Scene::Scene() {
+	
+}
+
+Scene::Scene(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player)
 {
-	map = NULL;
-	player = NULL;
+	map = _map;
+	ui = _ui;
+	text = _text;
+	player = _player;
 }
 
 Scene::~Scene()
@@ -26,18 +35,24 @@ Scene::~Scene()
 		delete map;
 	if (player != NULL)
 		delete player;
+	if (text != NULL)
+		delete text;
 }
 
 
 void Scene::init()
 {
 	initShaders();
-	map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
-	ui = new UserInterface();
+	if (map) map->init("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	//ui = new UserInterface();
+	if (text) {
+		text->init(glm::vec2(1280, 720), glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		text->addText(glm::vec2(0, 2), "A Piso Pedralbes game");
+	}
+
 	// I am assuming the same shader can be used for the UI
-	ui->init(texProgram, SCREEN_WIDTH, SCREEN_HEIGHT, INIT_PLAYER_HEALTH);
-	player = new Player();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, INIT_PLAYER_HEALTH, ui);
+	if (ui) ui->init(texProgram, SCREEN_WIDTH, SCREEN_HEIGHT, INIT_PLAYER_HEALTH);
+	if (player) player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, INIT_PLAYER_HEALTH, ui);
 	// Set the player's initial position
 	player->setPosition(
 		glm::vec2(
@@ -51,10 +66,13 @@ void Scene::init()
 	currentTime = 0.0f;
 }
 
-void Scene::update(int deltaTime)
+Scene* Scene::update(int deltaTime)
 {
 	currentTime += deltaTime;
-	player->update(deltaTime);
+	if (player) player->update(deltaTime);
+	if (nextScene) return nextScene;
+
+	return this;
 }
 
 void Scene::render()
@@ -68,6 +86,9 @@ void Scene::render()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
+
+	text->render();
+	
 	player->render();
 	ui->render();
 }
@@ -100,6 +121,14 @@ void Scene::initShaders()
 	texProgram.bindFragmentOutput("outColor");
 	vShader.free();
 	fShader.free();
+}
+
+void Scene::setKeyListener(KeyListener *listener) {
+	keyListener = listener;
+}
+
+void Scene::changeScene(Scene *newScene) {
+	nextScene = newScene;
 }
 
 

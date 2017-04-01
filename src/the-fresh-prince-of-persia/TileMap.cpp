@@ -3,7 +3,7 @@
 #include <sstream>
 #include <vector>
 #include "TileMap.h"
-
+#include <GL/glut.h>
 
 using namespace std;
 
@@ -17,19 +17,17 @@ using namespace std;
 #define LAYER_WALK_BEHIND 5
 
 
-TileMap *TileMap::createTileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program)
+void TileMap::init(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program)
 {
-	TileMap *map = new TileMap(levelFile, minCoords, program);
-	return map;
+	loadLevel(levelFile);
+	vaos = vector<GLuint>(nbLayers);
+	vbos = vector<GLuint>(nbLayers);
+	prepareArrays(minCoords, program);
 }
 
 
-TileMap::TileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program)
+TileMap::TileMap()
 {
-	loadLevel(levelFile);
-	vaos = vector<GLuint>(map.size());
-	vbos = vector<GLuint>(map.size());
-	prepareArrays(minCoords, program);
 }
 
 TileMap::~TileMap()
@@ -43,6 +41,7 @@ void TileMap::render() const
 {
 	glEnable(GL_TEXTURE_2D);
 	tilesheet.use();
+	
 	for (int k = 0; k < map.size(); ++k) {
 		glBindVertexArray(vaos[k]);
 		glEnableVertexAttribArray(posLocation);
@@ -88,8 +87,11 @@ bool TileMap::loadLevel(const string &levelFile)
 	sstream.str(line);
 	sstream >> tilesheetSize.x >> tilesheetSize.y;
 	tileTexSize = glm::vec2(1.f / tilesheetSize.x, 1.f / tilesheetSize.y);
+	getline(fin, line);
+	sstream.str(line);
+	sstream >> nbLayers;
 	
-	map = Map(6, vector<int>(mapSize.x * mapSize.y));
+	map = Map(nbLayers, vector<int>(mapSize.x * mapSize.y));
 	for (int k = 0; k < map.size(); ++k) {
 		vector<int> &layer = map[k];
 		for (int j = 0; j < mapSize.y; j++) {
@@ -193,8 +195,9 @@ bool isCollisionTile(int tileType, int layer) {
 	switch (layer) {
 	case LAYER_FLOOR:
 	case LAYER_WALL:
-	case LAYER_WALL_DEPTH:
 		return tileType > 0;
+	case LAYER_WALL_DEPTH:
+		return tileType > 0 && tileType == 24;
 	case LAYER_BACKGROUND:
 	case LAYER_WALK_BEHIND:
 	case LAYER_OVER_FLOOR:
@@ -226,14 +229,25 @@ bool TileMap::collisionMoveLeft(const glm::ivec2 &pos, const glm::ivec2 &size) c
 
 bool TileMap::collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size) const
 {
-	int x, y0, y1;
+	int x, x0, y0, y1, tile;
 
 	x = (pos.x + size.x - 1) / tileSizeX;
+	x0 = pos.x / tileSizeX;
 	y0 = pos.y / tileSizeY;
 	y1 = (pos.y + size.y - 1) / tileSizeY;
 	for (int k = 0; k < map.size(); ++k) {
 		const vector<int> &layer = map[k];
-		if (k != LAYER_FLOOR && isCollisionTile(layer[y1*mapSize.x + x + 1], k)) {
+
+		tile = layer[y1*mapSize.x + x0 + 1];
+		
+
+		if (k != LAYER_FLOOR && isCollisionTile(tile, k)) {
+			if (k == LAYER_WALL) {
+				int tileBelow = map[LAYER_WALL_DEPTH][(y1 + 1)*mapSize.x + x0 + 1];
+				cout << "Should not collide. Tile " << tile << ", tileBelow " << tileBelow << endl;
+				return tileBelow == 24;
+			}
+			cout << "Right collision on layer " << k << " with tile " << tile << endl;
 			return true;
 		}
 	}
@@ -242,15 +256,23 @@ bool TileMap::collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size) 
 
 bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, int *posY) const
 {
+	/*
 	int x0, y0, x1, y;
 
-	x0 = pos.x / tileSizeX;
-	y0 = pos.y / tileSizeY;
+	x0 = (pos.x / tileSizeX) + 1;
+	y0 = (pos.y / tileSizeY) + 1;
 	x1 = (pos.x + size.x - 1) / tileSizeX;
 	y = (pos.y + size.y - 1) / tileSizeY;
+	*/
+
+
+	int x, y, tile;
+	x = pos.x / tileSizeX;
+	y = pos.y / tileSizeY;
 	for (int k = 0; k < map.size(); ++k) {
 		const vector<int> &layer = map[k];
-		if (isCollisionTile(layer[y0*mapSize.x + x0], k)) {
+		tile = layer[y*mapSize.x + x];
+		if (isCollisionTile(tile, k)) {
 			return true;
 		}
 	}
@@ -260,7 +282,22 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 	// If the y pos of the player minus its tile position plus its sprite size
 	// is less than a certain ammount
 	if (*posY - realPosition + size.y <= CLOSE_ENOUGH_Y) {
-		*posY = (y0 + 1)*tileSizeY - 100;
+		*posY = (y + 1)*tileSizeY - 100;
 	}
+
 	return false;
+}
+
+bool TileMap::collisionMoveUp(const glm::ivec2 &pos, const glm::ivec2 &size, int *posY) const {
+	int x, y, tile;
+	x = pos.x / tileSizeX;
+	y = pos.y / tileSizeY;
+	for (int k = 0; k < map.size(); ++k) {
+		const vector<int> &layer = map[k];
+		tile = layer[y*mapSize.x + x];
+
+		if (isCollisionTile(tile, k)) {
+			return true;
+		}
+	}
 }

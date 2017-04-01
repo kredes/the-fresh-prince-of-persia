@@ -20,12 +20,10 @@ class TileMap
 {
 
 public:
-	// Tile maps can only be created inside an OpenGL context
-	static TileMap *createTileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program);
-
-	TileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program);
+	TileMap();
 	~TileMap();
 
+	void init(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program);
 	void render() const;
 	void free();
 	
@@ -35,6 +33,7 @@ public:
 	bool collisionMoveLeft(const glm::ivec2 &pos, const glm::ivec2 &size) const;
 	bool collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size) const;
 	bool collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, int *posY) const;
+	bool collisionMoveUp(const glm::ivec2 &pos, const glm::ivec2 &size, int *posY) const;
 	
 private:
 	bool loadLevel(const string &levelFile);
@@ -45,7 +44,7 @@ private:
 	vector<GLuint> vbos;
 	GLint posLocation, texCoordLocation;
 	glm::ivec2 position, mapSize, tilesheetSize;
-	int tileSizeX, tileSizeY, blockSizeX, blockSizeY;
+	int tileSizeX, tileSizeY, blockSizeX, blockSizeY, nbLayers;
 	Texture tilesheet;
 	glm::vec2 tileTexSize;
 	Map map;
