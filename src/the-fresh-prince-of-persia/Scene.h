@@ -10,6 +10,15 @@
 #include "UserInterface.h"
 
 
+#define SCREEN_X 0
+#define SCREEN_Y -120
+
+#define INIT_PLAYER_X_TILES 7
+#define INIT_PLAYER_Y_TILES 1
+
+#define INIT_PLAYER_HEALTH 3
+
+
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
 
@@ -19,35 +28,35 @@ class Scene
 
 public:
 	class KeyListener {
-		virtual void onKeyPressed(int key) = 0;
-		virtual void onKeyReleased(int key) = 0;
-		virtual void onSpecialKeyPressed(int key) = 0;
-		virtual void onSpecialKeyReleased(int key) = 0;
+	public:
+		virtual void onKeyPressed(Scene *scene, int key) = 0;
+		virtual void onKeyReleased(Scene *scene, int key) = 0;
+		virtual void onSpecialKeyPressed(Scene *scene, int key) = 0;
+		virtual void onSpecialKeyReleased(Scene *scene, int key) = 0;
 	};
 
 	Scene();
 	Scene(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player);
 	~Scene();
 
-	void init();
+	void init(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player);
 	// If there is an scene change, it returns the new Scene to show.
 	// Otherwise, returns itself.
 	Scene* update(int deltaTime);
 	void render();
 	void changeScene(Scene *newScene);
+	void initShaders();
 
 	void setKeyListener(KeyListener *listener);
 	KeyListener *keyListener;
+	ShaderProgram texProgram;
 
-private:
-	void initShaders();
-
-private:
 	TileMap *map;
 	TextMap *text;
 	Player *player;
 	UserInterface *ui;
-	ShaderProgram texProgram;
+
+private:
 	float currentTime;
 	glm::mat4 projection;
 	Scene *nextScene;

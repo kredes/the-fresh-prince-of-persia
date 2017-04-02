@@ -8,17 +8,12 @@
 //#define SCREEN_X -64
 //#define SCREEN_Y -24
 
-#define SCREEN_X 0
-#define SCREEN_Y -120
-
-#define INIT_PLAYER_X_TILES 7
-#define INIT_PLAYER_Y_TILES 1
-
-#define INIT_PLAYER_HEALTH 3
-
 
 Scene::Scene() {
-	
+	map = NULL;
+	ui = NULL;
+	text = NULL;
+	player = NULL;
 }
 
 Scene::Scene(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player)
@@ -40,28 +35,34 @@ Scene::~Scene()
 }
 
 
-void Scene::init()
+void Scene::init(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player)
 {
+	map = _map;
+	ui = _ui;
+	text = _text;
+	player = _player;
+	/*
 	initShaders();
 	if (map) map->init("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
-	//ui = new UserInterface();
 	if (text) {
 		text->init(glm::vec2(1280, 720), glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 		text->addText(glm::vec2(0, 2), "A Piso Pedralbes game");
 	}
-
+	
 	// I am assuming the same shader can be used for the UI
 	if (ui) ui->init(texProgram, SCREEN_WIDTH, SCREEN_HEIGHT, INIT_PLAYER_HEALTH);
-	if (player) player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, INIT_PLAYER_HEALTH, ui);
-	// Set the player's initial position
-	player->setPosition(
-		glm::vec2(
-			INIT_PLAYER_X_TILES * map->getTileSizeX(),
-			INIT_PLAYER_Y_TILES * map->getTileSizeY()
-		)
-	);
-
-	player->setTileMap(map);
+	if (player) {
+		player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, INIT_PLAYER_HEALTH, ui);
+		// Set the player's initial position
+		player->setPosition(
+			glm::vec2(
+				INIT_PLAYER_X_TILES * map->getTileSizeX(),
+				INIT_PLAYER_Y_TILES * map->getTileSizeY()
+			)
+		);
+		player->setTileMap(map);
+	}
+	*/
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
@@ -69,8 +70,8 @@ void Scene::init()
 Scene* Scene::update(int deltaTime)
 {
 	currentTime += deltaTime;
-	if (player) player->update(deltaTime);
-	if (nextScene) return nextScene;
+	player->update(deltaTime);
+	if (nextScene != NULL) return nextScene;
 
 	return this;
 }
@@ -85,12 +86,11 @@ void Scene::render()
 	modelview = glm::mat4(1.0f);
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
-	map->render();
 
-	text->render();
-	
-	player->render();
-	ui->render();
+	if (map != NULL) map->render();
+	if (text != NULL) text->render();
+	if (player != NULL) player->render();
+	if (ui != NULL) ui->render();
 }
 
 void Scene::initShaders()

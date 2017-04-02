@@ -108,9 +108,6 @@ void TextMap::prepareArrays()
 	for (int j = 0; j < mapSize.y; j++) {
 		for (int i = 0; i < mapSize.x; i++) {
 			tile = m[j * mapSize.x + i];
-			if (j * mapSize.x + i == 50) {
-				cout << "TEST" << endl;
-			}
 			if (tile != 0) {
 				// Non-empty tile
 				nTiles++;
