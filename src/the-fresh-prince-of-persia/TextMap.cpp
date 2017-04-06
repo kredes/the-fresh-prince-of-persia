@@ -9,13 +9,6 @@
 
 using namespace std;
 
-/*
-TextMap *TextMap::createTextMap(const glm::vec2 screenSize, const glm::vec2 &minCoords, ShaderProgram &program)
-{
-	TextMap *map = new TextMap(screenSize, minCoords, program);
-	return map;
-}
-*/
 
 void TextMap::init(const glm::vec2 screenSize, const glm::vec2 &_minCoords, ShaderProgram &_program) {
 	minCoords = _minCoords;
@@ -49,7 +42,7 @@ TextMap::~TextMap()
 
 
 void TextMap::addText(const glm::vec2 coords, string text) {
-	int index = (coords.y*mapSize.y + coords.x);
+	int index = (coords.y*mapSize.x + coords.x);
 	for (int i = 0; i < text.size(); ++i, ++index) {
 		if (index < m.size()) {
 			m[index] = CHARS[text[i]];
@@ -111,7 +104,7 @@ void TextMap::prepareArrays()
 			if (tile != 0) {
 				// Non-empty tile
 				nTiles++;
-				//posTile = glm::vec2(-minCoords.x/4 + i * tileSizeX, -minCoords.y/4 + j * tileSizeY);
+				posTile = glm::vec2(-minCoords.x/4 + i * tileSizeX, -minCoords.y/4 + j * tileSizeY);
 				posTile = glm::vec2(i * tileSizeX, j * tileSizeY);
 				// Generating texture coordinates
 				texCoordTile[0] = glm::vec2(

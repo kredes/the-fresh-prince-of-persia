@@ -14,6 +14,7 @@ Scene::Scene() {
 	ui = NULL;
 	text = NULL;
 	player = NULL;
+	keyListener = NULL;
 }
 
 Scene::Scene(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player)
@@ -32,6 +33,10 @@ Scene::~Scene()
 		delete player;
 	if (text != NULL)
 		delete text;
+	if (ui != NULL)
+		delete ui;
+	if (keyListener != NULL)
+		delete keyListener;
 }
 
 
@@ -41,28 +46,7 @@ void Scene::init(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_pla
 	ui = _ui;
 	text = _text;
 	player = _player;
-	/*
-	initShaders();
-	if (map) map->init("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
-	if (text) {
-		text->init(glm::vec2(1280, 720), glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
-		text->addText(glm::vec2(0, 2), "A Piso Pedralbes game");
-	}
 	
-	// I am assuming the same shader can be used for the UI
-	if (ui) ui->init(texProgram, SCREEN_WIDTH, SCREEN_HEIGHT, INIT_PLAYER_HEALTH);
-	if (player) {
-		player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, INIT_PLAYER_HEALTH, ui);
-		// Set the player's initial position
-		player->setPosition(
-			glm::vec2(
-				INIT_PLAYER_X_TILES * map->getTileSizeX(),
-				INIT_PLAYER_Y_TILES * map->getTileSizeY()
-			)
-		);
-		player->setTileMap(map);
-	}
-	*/
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
@@ -70,8 +54,7 @@ void Scene::init(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_pla
 Scene* Scene::update(int deltaTime)
 {
 	currentTime += deltaTime;
-	player->update(deltaTime);
-	if (nextScene != NULL) return nextScene;
+	if (player) player->update(deltaTime);
 
 	return this;
 }
@@ -126,10 +109,5 @@ void Scene::initShaders()
 void Scene::setKeyListener(KeyListener *listener) {
 	keyListener = listener;
 }
-
-void Scene::changeScene(Scene *newScene) {
-	nextScene = newScene;
-}
-
 
 

@@ -44,7 +44,6 @@ public:
 	// Otherwise, returns itself.
 	Scene* update(int deltaTime);
 	void render();
-	void changeScene(Scene *newScene);
 	void initShaders();
 
 	void setKeyListener(KeyListener *listener);
@@ -59,7 +58,6 @@ public:
 private:
 	float currentTime;
 	glm::mat4 projection;
-	Scene *nextScene;
 
 };
 
