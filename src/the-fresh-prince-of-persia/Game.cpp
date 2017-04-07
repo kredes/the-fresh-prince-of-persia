@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include "Game.h"
-#include "KeyListeners.cpp"
+#include "KeyListeners.h"
 
 void Game::init()
 {
@@ -13,15 +13,18 @@ void Game::init()
 	scene = new Scene();
 	scene->initShaders();
 
+	TileMap *map = new TileMap();
+	map->init("levels/title.txt", glm::vec2(0, 0), scene->texProgram);
+
 	TextMap *text = new TextMap();
 	text->init(glm::vec2(SCREEN_WIDTH, SCREEN_HEIGHT), glm::vec2(SCREEN_X, SCREEN_Y), scene->texProgram);
-	text->addText(glm::vec2(7, 5), "THE FRESH PRINCE OF PERSIA");
 	text->addText(glm::vec2(9, 7), "A Piso Pedralbes game");
 	text->addText(glm::vec2(10, 15), "Press space to start");
+	text->addText(glm::vec2(0, 21), "i: Instructions");
+	text->addText(glm::vec2(30, 21), "c: Credits");
 
-	scene->init(NULL, NULL, text, NULL);
+	scene->init(map, NULL, text, NULL);
 	scene->setKeyListener(new TitleSceneKeyListener());
-	
 }
 
 bool Game::update(int deltaTime)

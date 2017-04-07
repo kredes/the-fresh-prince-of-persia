@@ -52,6 +52,23 @@ void TextMap::addText(const glm::vec2 coords, string text) {
 	prepareArrays();
 }
 
+void TextMap::addText(int y, string text, Alignment alignment) {
+	switch (alignment) {
+	case CENTER: {
+		int m = text.size() / 2;
+		int x = mapSize.x / 2 - m;
+		addText(glm::vec2(x, y), text);
+		break;
+	}
+	case LEFT:
+		addText(glm::vec2(0, y), text);
+		break;
+	case RIGHT:
+		addText(glm::vec2(mapSize.x - text.size(), y), text);
+		break;
+	}
+}
+
 void TextMap::initCharMap() {
 	string validChars = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 	for (int i = 0; i < validChars.size(); ++i) {
@@ -59,9 +76,9 @@ void TextMap::initCharMap() {
 	}
 	// I'm not quite sure C++ supports extended ASCII
 	// For my name <3
-	//CHARS['é'] = 139;
+	CHARS['é'] = 139;
 	// For Alcázar
-	//CHARS['á'] = 142;
+	CHARS['á'] = 142;
 }
 
 void TextMap::render() const

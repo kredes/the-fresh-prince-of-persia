@@ -17,6 +17,10 @@ class TextMap
 {
 
 public:
+	enum Alignment {
+		CENTER, LEFT, RIGHT
+	};
+
 	// Tile maps can only be created inside an OpenGL context
 	void init(const glm::vec2 screenSize, const glm::vec2 &minCoords, ShaderProgram &program);
 
@@ -30,6 +34,7 @@ public:
 	int getTileSizeY() const { return tileSizeY; }
 
 	void addText(glm::vec2 coords, string text);
+	void addText(int y, string text, Alignment alignment);
 
 private:
 	void prepareMap(const glm::vec2 screenSize);

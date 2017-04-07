@@ -16,6 +16,19 @@ using namespace std;
 #define LAYER_OVER_FLOOR 4
 #define LAYER_WALK_BEHIND 5
 
+string layerName(int k) {
+	switch (k)
+	{
+	case 0: return "LAYER_BACKOUND";
+	case 1: return "LAYER_WALL_DEPTH";
+	case 2: return "LAYER_FLOOR";
+	case 3: return "LAYER_WALL";
+	case 4: return "LAYER_OVER_FLOOR";
+	case 5: return "LAYER_WALK_BEHIND";
+	default:
+		return "UNKNOWN";
+	}
+}
 
 void TileMap::init(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program)
 {
@@ -213,14 +226,16 @@ bool isCollisionTile(int tileType, int layer) {
 
 bool TileMap::collisionMoveLeft(const glm::ivec2 &pos, const glm::ivec2 &size) const
 {
-	int x, y0, y1;
+	int x, y0, y1, tile;
 
 	x = pos.x / tileSizeX;
 	y0 = pos.y / tileSizeY;
 	y1 = (pos.y + size.y - 1) / tileSizeY;
 	for (int k = 0; k < map.size(); ++k) {
 		const vector<int> &layer = map[k];
-		if (k != LAYER_FLOOR && isCollisionTile(layer[y1*mapSize.x + x], k)) {
+		
+		tile = layer[y1*mapSize.x + x];
+		if (k != LAYER_FLOOR && k != LAYER_WALL && isCollisionTile(tile, k)) {
 			return true;
 		}
 	}
@@ -244,10 +259,8 @@ bool TileMap::collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size) 
 		if (k != LAYER_FLOOR && isCollisionTile(tile, k)) {
 			if (k == LAYER_WALL) {
 				int tileBelow = map[LAYER_WALL_DEPTH][(y1 + 1)*mapSize.x + x0 + 1];
-				cout << "Should not collide. Tile " << tile << ", tileBelow " << tileBelow << endl;
 				return tileBelow == 24;
 			}
-			cout << "Right collision on layer " << k << " with tile " << tile << endl;
 			return true;
 		}
 	}
@@ -257,7 +270,7 @@ bool TileMap::collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size) 
 bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, int *posY) const
 {
 	/*
-	int x0, y0, x1, y;
+	int x0, y0, x1, y, tile;
 
 	x0 = (pos.x / tileSizeX) + 1;
 	y0 = (pos.y / tileSizeY) + 1;
@@ -265,14 +278,18 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 	y = (pos.y + size.y - 1) / tileSizeY;
 	*/
 
-
+	
 	int x, y, tile;
 	x = pos.x / tileSizeX;
 	y = pos.y / tileSizeY;
+	
+	cout << "Checking collision on coordinates (" << x << ", " << y << ")" << endl;
+
 	for (int k = 0; k < map.size(); ++k) {
 		const vector<int> &layer = map[k];
 		tile = layer[y*mapSize.x + x];
 		if (isCollisionTile(tile, k)) {
+			//cout << "Down collision on layer " << layerName(k) << " with tile " << tile << endl;
 			return true;
 		}
 	}
@@ -284,7 +301,6 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 	if (*posY - realPosition + size.y <= CLOSE_ENOUGH_Y) {
 		*posY = (y + 1)*tileSizeY - 100;
 	}
-
 	return false;
 }
 
