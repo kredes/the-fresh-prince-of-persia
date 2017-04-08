@@ -8,7 +8,7 @@
 #define SCREEN_X 0
 #define SCREEN_Y 0
 
-#define CLOSE_ENOUGH_TO_SCREEN_TRANS 30
+#define CLOSE_ENOUGH_TO_SCREEN_TRANS 50
 
 #define INIT_PLAYER_X_TILES 7
 #define INIT_PLAYER_Y_TILES 1
@@ -47,7 +47,8 @@ void Scene::init()
 			INIT_PLAYER_Y_TILES * map->getTileSizeY()
 		)
 	);
-	playerOriginX = 0;
+	screensPassedX = 0;
+	screensPassedY = 0;
 	player->setTileMap(map);
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
@@ -59,22 +60,85 @@ void Scene::updateCamera(int x, int y) {
 	projection *= glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.f));
 }
 
+// direction -> direction to where we want to go
+// 0 -> left
+// 1 -> right
+// 2 -> up
+// 3 -> down
+void Scene::changeScreen(int direction) {
+
+	int playerX = player->getPosition().x;
+	int playerY = player->getPosition().y;
+	
+	switch (direction)
+	{
+	case 0:
+		--screensPassedX;
+		playerX -= CLOSE_ENOUGH_TO_SCREEN_TRANS * 2;
+		break;
+	case 1:
+		++screensPassedX;
+		playerX += CLOSE_ENOUGH_TO_SCREEN_TRANS * 2;
+		break;
+	case 2:
+		++screensPassedY;
+		playerY += CLOSE_ENOUGH_TO_SCREEN_TRANS * 2;
+		break;
+	case 3:
+		--screensPassedY;
+		playerY -= CLOSE_ENOUGH_TO_SCREEN_TRANS * 2;
+		break;
+	default:
+		break;
+	}
+
+	player->setPosition(
+		glm::vec2(playerX, playerY)
+	);
+
+	// I am changing the sign of this because the code does not work very well
+	// with negative screenPassedX's
+	updateCamera(
+		-SCREEN_WIDTH * screensPassedX, 
+		-SCREEN_HEIGHT * screensPassedY
+	);
+	cout << "Changing scene to: " << screensPassedX << ", " << screensPassedY << endl;
+	cout << "With direction: " << direction << endl;
+}
+
 void Scene::update(int deltaTime)
 {
 	currentTime += deltaTime;
 	player->update(deltaTime);
 	int playerX = player->getPosition().x;
 	int playerY = player->getPosition().y;
+	// Conceptually this is how much screen space the player has
+	// covered if we only take into account the "screens"
+	// that the player has gone through
+	int screensPassedXWidth = screensPassedX * SCREEN_WIDTH;
+	int screensPassedYHeight = screensPassedY * SCREEN_HEIGHT;
 
-	int screensPassedX = playerOriginX * SCREEN_WIDTH;
-
-	if (playerX - screensPassedX > SCREEN_WIDTH - CLOSE_ENOUGH_TO_SCREEN_TRANS) {
+	if (playerX - screensPassedXWidth < CLOSE_ENOUGH_TO_SCREEN_TRANS)
+	{
+		// This means we're moving left
+		changeScreen(0);
+	}
+	else if (playerX - screensPassedXWidth > 
+		SCREEN_WIDTH - CLOSE_ENOUGH_TO_SCREEN_TRANS) 
+	{
 		// This means we're moving right
-		if (playerX / SCREEN_WIDTH > playerOriginX) {
-			++playerOriginX;
-			updateCamera(-SCREEN_WIDTH, 0);
-			player->setPosition(glm::vec2(playerX + 20, playerY));
-		}
+		changeScreen(1);
+	}
+	else if (playerY - screensPassedYHeight > 
+		SCREEN_HEIGHT - CLOSE_ENOUGH_TO_SCREEN_TRANS)
+	{
+		// This means we're moving up
+		changeScreen(2);
+	}
+	else if (playerY - screensPassedYHeight < CLOSE_ENOUGH_TO_SCREEN_TRANS)
+	{
+		// This means we're moving down
+		changeScreen(3);
 	}
 }
 
@@ -85,8 +149,7 @@ void Scene::render()
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 
 	glm::mat4 modelview = glm::mat4(1.0f);
-	//modelview *= glm::translate(glm::mat4(1.0f), glm::vec3(200, 0.f, 0.f));
-	
+
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
