@@ -244,6 +244,7 @@ void Player::changeState(PlayerState nextState) {
 		break;
 	case STATE_DEAD:
 		sprite->changeAnimation(DEAD);
+		PlaySound(TEXT("songs\\death.wav"), NULL, SND_FILENAME | SND_ASYNC);
 		break;
 	default:
 		cout << "changeState: State not recognized" << endl;

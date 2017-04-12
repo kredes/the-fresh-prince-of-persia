@@ -5,4 +5,14 @@ Victor Enrique Alcazar Lopez
 
 Funcionalitats implementades
 
+* Interficie grafica que mostra vida
+* Estructura bàsica de 4 pantalles: menú principal, jugar, instruccions, crèdits
+* So: música de fons i efectes especials
+* Part creativa: Un trivial
+
 Instruccions del joc
+
+* R - Tornar a començar
+* Fletxes Esquerra i Dreta - Moviment
+* Fletxa cap a dalt - Salt
+* F1 + Fletxes - Moure poc a poc
