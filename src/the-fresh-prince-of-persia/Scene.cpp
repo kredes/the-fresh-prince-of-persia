@@ -8,7 +8,7 @@
 #define SCREEN_X 0
 #define SCREEN_Y 0
 
-#define CLOSE_ENOUGH_TO_SCREEN_TRANS 50
+#define CLOSE_ENOUGH_TO_SCREEN_TRANS 10
 
 Scene::Scene() {
 	map = NULL;
@@ -67,6 +67,17 @@ void Scene::updateCamera(int x, int y) {
 	currentCameraPos = glm::vec2(x, y);
 }
 
+// Set the text for the scene (sx, sy)
+void Scene::setText(int sx, int sy) {
+	text->clearText();
+	if (sx == 0 && sy == 1) {
+		text->addText(
+			1, "HOLY SHIT YOU ARE DUMB", TextMap::Alignment::CENTER
+		);
+	}
+
+}
+
 // direction -> direction to where we want to go
 // 0 -> left
 // 1 -> right
@@ -113,6 +124,17 @@ void Scene::changeScreen(int direction) {
 		-SCREEN_WIDTH * screensPassedX,
 		-SCREEN_HEIGHT * screensPassedY
 	);
+	
+	text->updatePosition(
+		-SCREEN_WIDTH * screensPassedX,
+		-SCREEN_HEIGHT * screensPassedY
+	);
+
+	// We have to make this call here to trigger the prepareArrays() 
+	// function.
+	// DO NOT MOVE
+	setText(screensPassedX, screensPassedY);
+
 	cout << "Changing scene to: " << screensPassedX << ", " << screensPassedY << endl;
 	cout << "With direction: " << direction << endl;
 }
@@ -176,7 +198,9 @@ void Scene::render()
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 
 	if (map != NULL) map->render();
-	if (text != NULL) text->render();
+	if (text != NULL) {
+		text->render();
+	}
 	if (player != NULL) player->render();
 	if (ui != NULL) ui->render();
 }

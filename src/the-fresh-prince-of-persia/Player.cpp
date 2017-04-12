@@ -59,6 +59,8 @@ enum PlayerAnim
 	JUMP_STAND,
 	JUMP_RUN,
 	JUMP,
+
+	DEAD,
 };
 
 enum InputKey
@@ -153,6 +155,8 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram,
 
 	sprite->setAnimationSpeed(JUMP, 8);
 	addKeyframes(sprite, JUMP, 1, 1, 19);
+	sprite->setAnimationSpeed(DEAD, 8);
+	addKeyframes(sprite, DEAD, 6, 6, 1);
 
 	
 	tileMapDispl = tileMapPos;
@@ -227,6 +231,9 @@ void Player::changeState(PlayerState nextState) {
 	case STATE_END_JUMPING:
 		sprite->changeAnimation(JUMP, 13, 18);
 		break;
+	case STATE_DEAD:
+		sprite->changeAnimation(DEAD);
+		break;
 	default:
 		cout << "changeState: State not recognized" << endl;
 		break;
@@ -286,15 +293,15 @@ void Player::update(int deltaTime)
 			PlaySound(TEXT("sounds\\footstep.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			timeSinceSoundPlayed = 0;
 		}
+		if (Game::instance().getSpecialKey(GLUT_KEY_UP))
+		{
+			changeState(STATE_START_JUMPING_RUNNING);
+			break;
+		}
 		if (sprite->isAtEndingKeyframe()) {
 			if (!inputToCurrentDirection(sprite->isFacingLeft))
 			{
 				changeState(STATE_END_RUNNING);
-				break;
-			}
-			if (Game::instance().getSpecialKey(GLUT_KEY_UP))
-			{
-				changeState(STATE_START_JUMPING_RUNNING);
 				break;
 			}
 		}
@@ -411,26 +418,16 @@ void Player::update(int deltaTime)
 				PlaySound(TEXT("sounds\\land-harm.wav"), 
 					NULL, 
 					SND_FILENAME | SND_ASYNC);
-				healthPoints = 0;
-				ui->updateHealthPoints(healthPoints);
-				
-				if (healthPoints <= 0) {
-					//glm::vec2 cameraPos = 
-					//	Game::instance().scene->getCameraPos();
-					// cameraPos.y += 120;
-					glm::vec2 pos = glm::vec2(1, 4);
-					
-					//Game::instance().scene->text->addText(
-					//	pos, "HAHAHAHAHHAHAHA"
-					//
-					//);
-					//cout << "u died" << endl;
-				}
+				//addDamage(100);
 			}
 			else {
 				PlaySound(TEXT("sounds\\land-soft.wav"), 
 					NULL, 
 					SND_FILENAME | SND_ASYNC);
+			}
+			if (healthPoints <= 0) {
+				changeState(STATE_DEAD);
+				break;
 			}
 			timeFalling = 0;
 			changeState(STATE_START_CROUCHING);
@@ -456,7 +453,7 @@ void Player::update(int deltaTime)
 				if (map->collisionMoveDown(posPlayer,
 					glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
 				{
-					endJump = true;
+					//endJump = true;
 				}
 			}
 		}
@@ -497,6 +494,12 @@ void Player::update(int deltaTime)
 			changeState(STATE_STANDING);
 		}
 		break;
+	case STATE_DEAD:
+		//	"O bury me not on the lone prairie."
+		//	These words came low and mournfully
+		//	From the pallid lips of the youth who lay
+		//	On his dying bed at the close of day
+		break;
 	default:
 		break;
 	}
@@ -521,7 +524,9 @@ void Player::move(bool isMovingLeft, int speed) {
 	else if (!map->collisionMoveDown(posPlayer,
 		glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y), &posPlayer.y))
 	{
-		changeState(STATE_FALLING);
+		if (currentState != STATE_JUMPING_RUNNING) {
+			changeState(STATE_FALLING);
+		}		
 	}
 	
 }
@@ -551,8 +556,7 @@ void Player::addDamage(int ammount)
 {
 	healthPoints -= ammount;
 	ui->updateHealthPoints(healthPoints);
-	cout << "Player recieved " << ammount << " points of damage " <<
-		healthPoints << " health points left." << endl;
+	cout << healthPoints << endl;
 }
 
 string Player::getStateName(PlayerState state) {
@@ -596,6 +600,8 @@ string Player::getStateName(PlayerState state) {
 		return "STATE_WALK_CROUCHING";
 	case STATE_FALLING:
 		return "STATE_FALLING";
+	case STATE_DEAD:
+		return "STATE_DEAD";
 	default:
 		return "STATE_UNKNOWN";
 	}

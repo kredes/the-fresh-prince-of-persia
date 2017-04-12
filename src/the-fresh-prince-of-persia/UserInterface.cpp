@@ -113,8 +113,6 @@ void UserInterface::updatePosition(int x, int y)
 {
 	glm::vec2 prevPos = sprites_positions[0];
 	prevPos.x -= x;	prevPos.y -= y;
-	cout << "Oh my gawd" << endl;
-	cout << prevPos.x << ", "<< prevPos.y << endl;
 
 	ui_back_sprite->setPosition(prevPos);
 	for (int i = 0; i < playerHealth; i++)

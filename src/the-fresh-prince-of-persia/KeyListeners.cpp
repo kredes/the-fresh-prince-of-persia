@@ -64,7 +64,7 @@ void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 
 		TileMap *map = new TileMap();
 		//map->init("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), newScene->texProgram);
-		map->init("levels/trivial.txt", glm::vec2(SCREEN_X, -378), newScene->texProgram);
+		map->init("levels/trivial.txt", glm::vec2(SCREEN_X, SCREEN_Y), newScene->texProgram);
 
 		UserInterface * ui = new UserInterface();
 		ui->init(newScene->texProgram, SCREEN_WIDTH, SCREEN_HEIGHT, INIT_PLAYER_HEALTH);
@@ -82,6 +82,32 @@ void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 
 		TextMap *text = new TextMap();
 		text->init(glm::vec2(SCREEN_WIDTH, SCREEN_HEIGHT), glm::vec2(SCREEN_X, SCREEN_Y), scene->texProgram);
+		text->addText(
+			1, "WELCOME TO THE TRIVIAL OF PERSIA", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			2, "YOUR SOUL WILL BE TESTED", TextMap::Alignment::CENTER
+		);
+
+		text->addText(
+			3, "AND YOUR KNOWLEDGE ABOUT VIDEOGAMES", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			4, "PUT TO QUESTION!", TextMap::Alignment::CENTER
+		);
+
+		text->addText(
+			6, "FIRST OF ALL", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "YOU HAVE TO JUMP THIS SMALL CHASM", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "I AM SURE IT'LL BE NO CHALLENGE TO YOU", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			9, "BRAVE ADVENTURER! ------------->", TextMap::Alignment::CENTER
+		);
 
 		newScene->init(map, ui, text, player);
 		newScene->setKeyListener(new PlayingSceneKeyListener());

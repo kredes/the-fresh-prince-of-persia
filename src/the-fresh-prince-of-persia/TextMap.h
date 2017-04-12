@@ -27,6 +27,9 @@ public:
 	TextMap();
 	~TextMap();
 
+	void clearText();
+
+
 	void render() const;
 	void free();
 
@@ -36,19 +39,22 @@ public:
 	void addText(glm::vec2 coords, string text);
 	void addText(int y, string text, Alignment alignment);
 
+	// This is similar to what i've done in 
+	// UserInterface.h for rendering this once the camera has moved
+	// - @wextia
+	void updatePosition(int x, int y);
+
 private:
 	void prepareMap(const glm::vec2 screenSize);
 	void prepareArrays();
 	void initCharMap();
-
-private:
 	GLuint vao, vbo;
 	GLint posLocation, texCoordLocation;
 	glm::ivec2 position, mapSize, tilesheetSize;
 	int tileSizeX, tileSizeY, blockSizeX, blockSizeY;
 	Texture tilesheet;
 	glm::vec2 tileTexSize;
-	vector<int> m;
+	vector<int> charMap;
 	map<char, int> CHARS;
 
 	glm::vec2 minCoords;

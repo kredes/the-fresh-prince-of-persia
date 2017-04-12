@@ -11,7 +11,11 @@ using namespace std;
 
 
 void TextMap::init(const glm::vec2 screenSize, const glm::vec2 &_minCoords, ShaderProgram &_program) {
-	minCoords = _minCoords;
+	// Somewhere this is being assigned to and it causes some problems
+	// with the rendering.
+	//minCoords = _minCoords;
+	minCoords = glm::vec2(0, 0);
+
 	program = _program;
 
 	initCharMap();
@@ -40,12 +44,16 @@ TextMap::~TextMap()
 	delete m;*/
 }
 
+void TextMap::clearText() {
+	charMap = vector<int>(mapSize.x*mapSize.y, 0);
+	prepareArrays();
+}
 
 void TextMap::addText(const glm::vec2 coords, string text) {
 	int index = (coords.y*mapSize.x + coords.x);
 	for (int i = 0; i < text.size(); ++i, ++index) {
-		if (index < m.size()) {
-			m[index] = CHARS[text[i]];
+		if (index < charMap.size()) {
+			charMap[index] = CHARS[text[i]];
 		}
 		else break;
 	}
@@ -81,6 +89,11 @@ void TextMap::initCharMap() {
 	CHARS['á'] = 142;
 }
 
+void TextMap::updatePosition(int x, int y)
+{
+	minCoords = glm::vec2(x, y);
+}
+
 void TextMap::render() const
 {
 	if (vao <= 0) return;
@@ -103,7 +116,7 @@ void TextMap::free()
 void TextMap::prepareMap(const glm::vec2 screenSize) {
 	mapSize.x = screenSize.x / tileSizeX;
 	mapSize.y = screenSize.y / tileSizeY;
-	m = vector<int>(mapSize.x*mapSize.y, 0);
+	charMap = vector<int>(mapSize.x*mapSize.y, 0);
 }
 
 void TextMap::prepareArrays()
@@ -117,12 +130,16 @@ void TextMap::prepareArrays()
 
 	for (int j = 0; j < mapSize.y; j++) {
 		for (int i = 0; i < mapSize.x; i++) {
-			tile = m[j * mapSize.x + i];
+			tile = charMap[j * mapSize.x + i];
 			if (tile != 0) {
 				// Non-empty tile
 				nTiles++;
-				posTile = glm::vec2(-minCoords.x/4 + i * tileSizeX, -minCoords.y/4 + j * tileSizeY);
-				posTile = glm::vec2(i * tileSizeX, j * tileSizeY);
+				//posTile = glm::vec2(-minCoords.x/4 + 
+				//	i * tileSizeX, -minCoords.y/4 + 
+				//	j * tileSizeY);
+				posTile = glm::vec2(
+					i * tileSizeX - minCoords.x, 
+					j * tileSizeY - minCoords.y);
 				// Generating texture coordinates
 				texCoordTile[0] = glm::vec2(
 					float((tile - 1) % tilesheetSize.x) / tilesheetSize.x,

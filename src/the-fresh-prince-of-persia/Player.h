@@ -84,6 +84,9 @@ private:
 		STATE_JUMPING,
 		STATE_START_JUMPING,
 		STATE_END_JUMPING,
+
+		// DEAD
+		STATE_DEAD,
 	};
 
 	string getStateName(Player::PlayerState state);
