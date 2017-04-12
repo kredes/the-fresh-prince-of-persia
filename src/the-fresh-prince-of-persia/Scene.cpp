@@ -40,8 +40,17 @@ Scene::~Scene()
 		delete keyListener;
 }
 
+void Scene::resetCamera() {
+	updateCamera(0, 0);
+	setText(0, 0);
+	currentCameraPos = glm::vec2(0, 0);
+	currentTime = 0.0f;
+	player->reset();
+}
 
-void Scene::init(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player)
+
+void Scene::init(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player, 
+	bool isMainScene)
 {
 	map = _map;
 	ui = _ui;
@@ -59,17 +68,58 @@ void Scene::init(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_pla
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentCameraPos = glm::vec2(0, 0);
 	currentTime = 0.0f;
+	if(isMainScene)
+		setText(screensPassedX, screensPassedY);
 }
 
 void Scene::updateCamera(int x, int y) {
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	projection *= glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.f));
 	currentCameraPos = glm::vec2(x, y);
+	
+	ui->updatePosition(
+		x,
+		y
+	);
+
+	text->updatePosition(
+		x,
+		y
+	);
 }
 
 // Set the text for the scene (sx, sy)
 void Scene::setText(int sx, int sy) {
 	text->clearText();
+	if (sx == 0 && sy == 0) {
+
+		text->addText(
+			1, "WELCOME TO THE TRIVIAL OF PERSIA", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			2, "YOUR SOUL WILL BE TESTED", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			3, "AND YOUR KNOWLEDGE ABOUT VIDEOGAMES", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			4, "PUT TO QUESTION!", TextMap::Alignment::CENTER
+		);
+
+		text->addText(
+			6, "FIRST OF ALL", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "YOU HAVE TO JUMP THIS SMALL CHASM", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "I AM SURE IT'LL BE NO CHALLENGE TO YOU", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			9, "BRAVE ADVENTURER! ------------->", TextMap::Alignment::CENTER
+		);
+	}
+
 	if (sx == 0 && sy == 1) {
 		text->addText(
 			1, "   NO NO NO NO        DID YOU REALLY", TextMap::Alignment::LEFT
@@ -86,7 +136,200 @@ void Scene::setText(int sx, int sy) {
 		text->addText(
 			5, "   OH MY GOD          OH MY GOD", TextMap::Alignment::LEFT
 		);
+		text->addText(
+			14, "  YOU CAN RESTART BY PRESSING R", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			15, "  BY THE WAY", TextMap::Alignment::CENTER
+		);
 	}
+	if (sx == 1 && sy == 0) {
+		text->addText(
+			1, "Okay, here comes the fist question:", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			3, "WHICH YEAR WAS", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			4, "PRINCE OF PERSIA RELEASED ON?", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			6, "            1989                  2003", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "             |                    |  ", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "             V                    V  ", TextMap::Alignment::CENTER
+		);
+	}
+	if (sx == 1 && sy == 2) {
+		text->addText(
+			6, "HOLY S**T YOU ARE RIGHT!", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			10, "          NOT IF YOU LANDED", TextMap::Alignment::LEFT
+		);
+		text->addText(
+			11, "       <--- HERE THOUGH --->", TextMap::Alignment::LEFT
+		);
+		text->addText(
+			12, "               (LMAO)", TextMap::Alignment::LEFT
+		);
+	}
+	if (sx == 1 && sy == 3) {
+		text->addText(
+			4, "OKAY SO", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			5, "THIS IS EMBARASSING", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			6, "YOU TECHNICALLY WON  ", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "THIS \"GAME\"", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "ALREADY", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			9, "SO YOU CAN", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			9, "PRESS R", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			10, "AND RESTART IT", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			11, "OR IDK YOU COULD GO PLAY OVERWATCH", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			12, "OR HEARTSTONE", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			13, "I'VE HEARD LEAGUE IS STILL GOOD", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			15, "A GAME BY", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			16, "VICTOR ALCAZAR", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			17, "ANDRES INSAURRALDE", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			18, "HIDEO KOJIMA (NOT REALLY)", TextMap::Alignment::CENTER
+		);
+	}
+	if (sx == 2 && sy == 0) {
+		text->addText(
+			6, "HEY KID", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "GET BACK THERE", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "AND ANSWER MY QUESTION!", TextMap::Alignment::CENTER
+		);
+	}
+	if (sx == 2 && sy == 1) {
+		text->addText(
+			6, "WHAT DID I TOLD YOU?", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "NOW YOU'RE HERE", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "FOREVER!", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			10, "(OR UNTILL YOU HIT R)", TextMap::Alignment::CENTER
+		);
+	}
+	if (sx == 1 && sy == 1) {
+		text->addText(
+			6, "THAT WAS NOT QUITE", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "RIGHT", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "BUT STILL", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			9, "YOU CAN PLAY AROUND IN MY DUNGEON", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			10, "AS A PARTICIPATION TROPHY", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			11, "OR HIT R AND TRY AGAIN", TextMap::Alignment::CENTER
+		);
+	}
+	if (sx == 2 && sy == 2) {
+		text->addText(
+			6, "DID YOU HAD FUN?", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "ARE THE SPIKES ENTERTAINING YOU?", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "YEAH I KNOW THEY ARE PRETTY", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			9, "COOL HUH", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			11, "REMEMBER TO HIT R TO PLAY AGAIN", TextMap::Alignment::CENTER
+		);
+	}
+	if (sx == 0 && sy == 2) {
+		text->addText(
+			6, "KID!", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "WHAT THE HELL ARE YOU DOING HERE", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "YOU ARE NOT SUPPOSED TO BE HERE", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			9, "THIS IS WHERE I COME TO CRY :(", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			11, "PRESS R AND LEAVE ME ALONE!", TextMap::Alignment::CENTER
+		);
+	}
+	if (sx == 0 && sy == 3) {
+		text->addText(
+			6, "THIS IS MY COOL ZONE", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			7, "ITS PRETTY COOL HUH", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			8, "YEAH I KNOW", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			9, "THIS GAME IS NOT VERY WELL MADE", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			10, "BUT WHAT ARE YOU GONNA DO", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			11, "ABOUT IT? SUE ME? HAH!", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			13, "(please don't sue me)", TextMap::Alignment::CENTER
+		);
+		text->addText(
+			14, "(press R to start over...)", TextMap::Alignment::CENTER
+		);
+	}
+
 
 }
 
@@ -130,15 +373,6 @@ void Scene::changeScreen(int direction) {
 	// with negative screenPassedX's
 	updateCamera(
 		-SCREEN_WIDTH * screensPassedX, 
-		-SCREEN_HEIGHT * screensPassedY
-	);
-	ui->updatePosition(
-		-SCREEN_WIDTH * screensPassedX,
-		-SCREEN_HEIGHT * screensPassedY
-	);
-	
-	text->updatePosition(
-		-SCREEN_WIDTH * screensPassedX,
 		-SCREEN_HEIGHT * screensPassedY
 	);
 

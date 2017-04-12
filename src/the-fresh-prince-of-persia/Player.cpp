@@ -91,6 +91,17 @@ void addKeyframes(Sprite* sprite, int anim, int xidx, int yidx, int num) {
 	}
 }
 
+void Player::reset() {
+	bJumping = false;
+	isMoving = false;
+	healthPoints = INIT_HEALTH_POINTS;
+	movementDir = -1;
+	initMovementPos = posPlayer.x;
+	Player::changeState(STATE_FALLING);
+	timeSinceSoundPlayed = 0;
+	timeFalling = 0;
+}
+
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, 
 	int intialHealth, UserInterface* _ui)
 {
@@ -414,11 +425,11 @@ void Player::update(int deltaTime)
 			&posPlayer.y))
 		{
 			// If we have been falling for more than half a second
-			if (timeFalling > 10) {
+			if (timeFalling > 500) {
 				PlaySound(TEXT("sounds\\land-harm.wav"), 
 					NULL, 
 					SND_FILENAME | SND_ASYNC);
-				//addDamage(100);
+				addDamage(1);
 			}
 			else {
 				PlaySound(TEXT("sounds\\land-soft.wav"), 

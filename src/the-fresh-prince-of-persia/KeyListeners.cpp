@@ -15,6 +15,7 @@ void PlayingSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 				INIT_PLAYER_Y_TILES * scene->map->getTileSizeY()
 			)
 		);
+		scene->resetCamera();
 	}
 }
 void PlayingSceneKeyListener::onKeyReleased(Scene *scene, int key) {}
@@ -41,7 +42,7 @@ void InstructionsSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 		text->addText(glm::vec2(0, 21), "i: Instructions");
 		text->addText(glm::vec2(30, 21), "c: Credits");
 
-		newScene->init(map, NULL, text, NULL);
+		newScene->init(map, NULL, text, NULL, false);
 		newScene->setKeyListener(new TitleSceneKeyListener());
 		
 		delete Game::instance().scene;
@@ -82,34 +83,8 @@ void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 
 		TextMap *text = new TextMap();
 		text->init(glm::vec2(SCREEN_WIDTH, SCREEN_HEIGHT), glm::vec2(SCREEN_X, SCREEN_Y), scene->texProgram);
-		text->addText(
-			1, "WELCOME TO THE TRIVIAL OF PERSIA", TextMap::Alignment::CENTER
-		);
-		text->addText(
-			2, "YOUR SOUL WILL BE TESTED", TextMap::Alignment::CENTER
-		);
 
-		text->addText(
-			3, "AND YOUR KNOWLEDGE ABOUT VIDEOGAMES", TextMap::Alignment::CENTER
-		);
-		text->addText(
-			4, "PUT TO QUESTION!", TextMap::Alignment::CENTER
-		);
-
-		text->addText(
-			6, "FIRST OF ALL", TextMap::Alignment::CENTER
-		);
-		text->addText(
-			7, "YOU HAVE TO JUMP THIS SMALL CHASM", TextMap::Alignment::CENTER
-		);
-		text->addText(
-			8, "I AM SURE IT'LL BE NO CHALLENGE TO YOU", TextMap::Alignment::CENTER
-		);
-		text->addText(
-			9, "BRAVE ADVENTURER! ------------->", TextMap::Alignment::CENTER
-		);
-
-		newScene->init(map, ui, text, player);
+		newScene->init(map, ui, text, player, true);
 		newScene->setKeyListener(new PlayingSceneKeyListener());
 
 		delete Game::instance().scene;
@@ -136,7 +111,7 @@ void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 		text->addText(12, "r: Restart", TextMap::Alignment::CENTER);
 		text->addText(21, "b: Back", TextMap::Alignment::LEFT);
 
-		newScene->init(map, NULL, text, NULL);
+		newScene->init(map, NULL, text, NULL, false);
 		newScene->setKeyListener(new InstructionsSceneKeyListener());
 
 		delete Game::instance().scene;
@@ -161,7 +136,7 @@ void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 		text->addText(10, "Q2 2017", TextMap::Alignment::CENTER);
 		text->addText(21, "b: Back", TextMap::Alignment::LEFT);
 
-		newScene->init(map, NULL, text, NULL);
+		newScene->init(map, NULL, text, NULL, false);
 		newScene->setKeyListener(new CreditsSceneKeyListener());
 
 		delete Game::instance().scene;
@@ -192,7 +167,7 @@ void CreditsSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 		text->addText(21, "i: Instructions", TextMap::Alignment::LEFT);
 		text->addText(21, "c: Credits", TextMap::Alignment::RIGHT);
 
-		newScene->init(map, NULL, text, NULL);
+		newScene->init(map, NULL, text, NULL, false);
 		newScene->setKeyListener(new TitleSceneKeyListener());
 
 		delete Game::instance().scene;

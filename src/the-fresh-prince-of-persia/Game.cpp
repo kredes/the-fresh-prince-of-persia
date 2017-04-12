@@ -25,7 +25,7 @@ void Game::init()
 	text->addText(glm::vec2(0, 21), "i: Instructions");
 	text->addText(glm::vec2(30, 21), "c: Credits");
 
-	scene->init(map, NULL, text, NULL);
+	scene->init(map, NULL, text, NULL, false);
 	scene->setKeyListener(new TitleSceneKeyListener());
 
 	PlaySound(TEXT("songs\\main-theme.wav"), NULL, SND_FILENAME | SND_ASYNC);

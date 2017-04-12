@@ -13,7 +13,9 @@ class Player
 {
 public:
 	
-	void init(const glm::ivec2 & tileMapPos, ShaderProgram & shaderProgram, 
+	void reset();
+
+	void init(const glm::ivec2 & tileMapPos, ShaderProgram & shaderProgram,
 		int intialHealth, UserInterface* ui);
 	void update(int deltaTime);
 	void move(bool isMovingfLeft, int speed);

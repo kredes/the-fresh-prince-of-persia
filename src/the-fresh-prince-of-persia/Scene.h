@@ -14,7 +14,7 @@
 #define SCREEN_Y -120
 
 #define INIT_PLAYER_X_TILES 10
-#define INIT_PLAYER_Y_TILES 1
+#define INIT_PLAYER_Y_TILES 4
 
 #define INIT_PLAYER_HEALTH 3
 
@@ -39,7 +39,7 @@ public:
 	Scene(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player);
 	~Scene();
 
-	void init(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_player);
+	void init(TileMap * _map, UserInterface * _ui, TextMap * _text, Player * _player, bool isMainScene);
 	// If there is an scene change, it returns the new Scene to show.
 	// Otherwise, returns itself.
 	Scene* update(int deltaTime);
@@ -47,6 +47,7 @@ public:
 	glm::vec2 currentCameraPos;
 	void render();
 	void initShaders();
+	void resetCamera();
 
 	void setKeyListener(KeyListener *listener);
 	KeyListener *keyListener;
