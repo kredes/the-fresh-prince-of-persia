@@ -58,7 +58,10 @@ public:
 private:
 	float currentTime;
 	glm::mat4 projection;
-
+	void updateCamera(int x, int y);
+	void changeScreen(int direction);
+	int screensPassedX;
+	int screensPassedY;
 };
 
 

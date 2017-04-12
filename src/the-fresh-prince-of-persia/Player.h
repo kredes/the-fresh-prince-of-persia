@@ -22,6 +22,7 @@ public:
 	
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
+	glm::vec2 getPosition();
 
 	void addDamage(int ammount);
 	
