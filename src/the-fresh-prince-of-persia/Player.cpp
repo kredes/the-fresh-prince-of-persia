@@ -524,7 +524,9 @@ void Player::move(bool isMovingLeft, int speed) {
 	else if (!map->collisionMoveDown(posPlayer,
 		glm::ivec2(PLAYER_BB_SIZE_X, PLAYER_BB_SIZE_Y), &posPlayer.y))
 	{
-		if (currentState != STATE_JUMPING_RUNNING) {
+		if (currentState != STATE_JUMPING_RUNNING &&
+			currentState != STATE_START_JUMPING_RUNNING &&
+			currentState != STATE_END_JUMPING_RUNNING) {
 			changeState(STATE_FALLING);
 		}		
 	}

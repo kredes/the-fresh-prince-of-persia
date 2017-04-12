@@ -72,7 +72,19 @@ void Scene::setText(int sx, int sy) {
 	text->clearText();
 	if (sx == 0 && sy == 1) {
 		text->addText(
-			1, "HOLY SHIT YOU ARE DUMB", TextMap::Alignment::CENTER
+			1, "   NO NO NO NO        DID YOU REALLY", TextMap::Alignment::LEFT
+		);
+		text->addText(
+			2, "   YOU ARE NOT        NOT MADE", TextMap::Alignment::LEFT
+		);
+		text->addText(
+			3, "   SUPPOSED           THIS TINY", TextMap::Alignment::LEFT
+		);
+		text->addText(
+			4, "   TO GO LEFT         JUMP?", TextMap::Alignment::LEFT
+		);
+		text->addText(
+			5, "   OH MY GOD          OH MY GOD", TextMap::Alignment::LEFT
 		);
 	}
 
