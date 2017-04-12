@@ -283,7 +283,7 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 	x = pos.x / tileSizeX;
 	y = pos.y / tileSizeY;
 	
-	cout << "Checking collision on coordinates (" << x << ", " << y << ")" << endl;
+	// cout << "Checking collision on coordinates (" << x << ", " << y << ")" << endl;
 
 	for (int k = 0; k < map.size(); ++k) {
 		const vector<int> &layer = map[k];

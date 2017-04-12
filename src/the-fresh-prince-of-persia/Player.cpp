@@ -33,6 +33,8 @@
 // Sounds (time in milliseconds)
 #define SOUND_TIME_FOOTSTEP 300
 
+#define FALL_ACCEL 8
+
 #define SHIFT_KEY 112
 
 enum PlayerAnim
@@ -157,6 +159,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram,
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	Player::changeState(STATE_FALLING);
 	timeSinceSoundPlayed = 0;
+	timeFalling = 0;
 }
 
 void Player::changeState(PlayerState nextState) {
@@ -246,6 +249,7 @@ void Player::update(int deltaTime)
 {
 	timeSinceSoundPlayed += deltaTime;
 	bool endJump = false;
+	float vel = 0;
 	switch (currentState)
 	{
 	case STATE_STANDING:
@@ -395,10 +399,40 @@ void Player::update(int deltaTime)
 		}
 		break;
 	case STATE_FALLING:
-		posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
+		vel = FALL_ACCEL * timeFalling / 1000.0f;
+		posPlayer.y += vel * timeFalling / 1000.0f + FALL_STEP;
+		timeFalling += deltaTime;
+		if (map->collisionMoveDown(posPlayer,
+			glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y),
+			&posPlayer.y))
 		{
-			PlaySound(TEXT("sounds\\land-soft.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			// If we have been falling for more than half a second
+			if (timeFalling > 10) {
+				PlaySound(TEXT("sounds\\land-harm.wav"), 
+					NULL, 
+					SND_FILENAME | SND_ASYNC);
+				healthPoints = 0;
+				ui->updateHealthPoints(healthPoints);
+				
+				if (healthPoints <= 0) {
+					//glm::vec2 cameraPos = 
+					//	Game::instance().scene->getCameraPos();
+					// cameraPos.y += 120;
+					glm::vec2 pos = glm::vec2(1, 4);
+					
+					//Game::instance().scene->text->addText(
+					//	pos, "HAHAHAHAHHAHAHA"
+					//
+					//);
+					//cout << "u died" << endl;
+				}
+			}
+			else {
+				PlaySound(TEXT("sounds\\land-soft.wav"), 
+					NULL, 
+					SND_FILENAME | SND_ASYNC);
+			}
+			timeFalling = 0;
 			changeState(STATE_START_CROUCHING);
 		}
 		break;

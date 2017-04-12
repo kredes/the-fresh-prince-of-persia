@@ -33,6 +33,7 @@ public:
 	void changeAnimation(int animId, int startingKeyframe, int endingKeyframe);
 	int animation() const;
 	void setPosition(const glm::vec2 &pos);
+	glm::vec2 getPosition();
 	int timesLoopedCurrentAnimation;
 	int currentKeyframe;
 	int startingKeyframe, endingKeyframe;

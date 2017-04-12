@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include "UserInterface.h"
+#include <iostream>
 
 #define SIZE_UI_X 200
 #define SIZE_UI_Y 20
@@ -84,12 +85,13 @@ void UserInterface::init(ShaderProgram & shaderProgram, int screen_width,
 	// The background sprite
 	ui_back_sprite = initBlackSprite(shaderProgram, ui_back_spritesheet, screen_width,
 		screen_height);
-
+	sprites_positions.push_back(ui_back_sprite->getPosition());
 
 	for (int i = 0; i < _initialHealth; i++)
 	{
 		health_point_sprites.push_back(initHealthPointSprite(shaderProgram, health_points_spritesheet, screen_width,
 			screen_height, i));
+		sprites_positions.push_back(health_point_sprites[i]->getPosition());
 	}
 }
 
@@ -104,6 +106,22 @@ void UserInterface::render()
 	for (int i = 0; i < playerHealth; i++)
 	{
 		health_point_sprites[i]->render();
+	}
+}
+
+void UserInterface::updatePosition(int x, int y)
+{
+	glm::vec2 prevPos = sprites_positions[0];
+	prevPos.x -= x;	prevPos.y -= y;
+	cout << "Oh my gawd" << endl;
+	cout << prevPos.x << ", "<< prevPos.y << endl;
+
+	ui_back_sprite->setPosition(prevPos);
+	for (int i = 0; i < playerHealth; i++)
+	{
+		glm::vec2 prevPos = sprites_positions[i + 1];
+		prevPos.x -= x;	prevPos.y -= y;
+		health_point_sprites[i]->setPosition(prevPos);
 	}
 }
 

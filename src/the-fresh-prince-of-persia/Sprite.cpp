@@ -143,6 +143,11 @@ void Sprite::setPosition(const glm::vec2 &pos)
 	position = pos;
 }
 
+glm::vec2 Sprite::getPosition()
+{
+	return position;
+}
+
 // This can generate some problems. If there are any bugs with animations
 // looping where they must not, this function may be a good place to start debugging.
 // FIXME

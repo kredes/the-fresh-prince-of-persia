@@ -57,12 +57,14 @@ void Scene::init(TileMap *_map, UserInterface *_ui, TextMap *_text, Player *_pla
 	screensPassedX = 0;
 	screensPassedY = 0;
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	currentCameraPos = glm::vec2(0, 0);
 	currentTime = 0.0f;
 }
 
 void Scene::updateCamera(int x, int y) {
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	projection *= glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.f));
+	currentCameraPos = glm::vec2(x, y);
 }
 
 // direction -> direction to where we want to go
@@ -105,6 +107,10 @@ void Scene::changeScreen(int direction) {
 	// with negative screenPassedX's
 	updateCamera(
 		-SCREEN_WIDTH * screensPassedX, 
+		-SCREEN_HEIGHT * screensPassedY
+	);
+	ui->updatePosition(
+		-SCREEN_WIDTH * screensPassedX,
 		-SCREEN_HEIGHT * screensPassedY
 	);
 	cout << "Changing scene to: " << screensPassedX << ", " << screensPassedY << endl;
@@ -151,6 +157,11 @@ Scene* Scene::update(int deltaTime)
 		changeScreen(3);
 	}
 	return this;
+}
+
+glm::vec2 Scene::getCameraPos()
+{
+	return currentCameraPos;
 }
 
 void Scene::render()

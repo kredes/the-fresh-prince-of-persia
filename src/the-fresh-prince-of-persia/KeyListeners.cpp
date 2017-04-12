@@ -56,7 +56,6 @@ void InstructionsSceneKeyListener::onSpecialKeyReleased(Scene *scene, int key) {
 /* TitleSceneKeyListener */
 void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 	if (key == 32) { // Space
-		std::cout << "Enter key pressed" << endl;
 		PlaySound(NULL, 0 , 0);
 			
 		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
@@ -81,7 +80,10 @@ void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 		);
 		player->setTileMap(map);
 
-		newScene->init(map, ui, NULL, player);
+		TextMap *text = new TextMap();
+		text->init(glm::vec2(SCREEN_WIDTH, SCREEN_HEIGHT), glm::vec2(SCREEN_X, SCREEN_Y), scene->texProgram);
+
+		newScene->init(map, ui, text, player);
 		newScene->setKeyListener(new PlayingSceneKeyListener());
 
 		delete Game::instance().scene;

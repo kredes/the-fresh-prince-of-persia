@@ -43,6 +43,8 @@ public:
 	// If there is an scene change, it returns the new Scene to show.
 	// Otherwise, returns itself.
 	Scene* update(int deltaTime);
+	glm::vec2 getCameraPos();
+	glm::vec2 currentCameraPos;
 	void render();
 	void initShaders();
 
