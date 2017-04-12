@@ -13,7 +13,7 @@
 #define SCREEN_X 0
 #define SCREEN_Y -120
 
-#define INIT_PLAYER_X_TILES 7
+#define INIT_PLAYER_X_TILES 10
 #define INIT_PLAYER_Y_TILES 1
 
 #define INIT_PLAYER_HEALTH 3

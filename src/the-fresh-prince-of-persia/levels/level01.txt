@@ -4,7 +4,6 @@ TILEMAP
 sprites/tiles/tileset.png 	-- Tilesheet
 12 3								-- Number of tiles in tilesheet
 3
-
 0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0
