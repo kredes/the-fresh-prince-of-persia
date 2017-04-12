@@ -5,6 +5,8 @@
 #include "Player.h"
 #include "Game.h"
 #include "UserInterface.h"
+#include <windows.h>
+#include <mmsystem.h>
 
 #define JUMP_ANGLE_STEP 4
 #define JUMP_HEIGHT 64
@@ -27,6 +29,9 @@
 #define PLAYER_BB_SIZE_Y 20
 
 #define INIT_HEALTH_POINTS 3;
+
+// Sounds (time in milliseconds)
+#define SOUND_TIME_FOOTSTEP 300
 
 #define SHIFT_KEY 112
 
@@ -151,6 +156,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram,
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	Player::changeState(STATE_FALLING);
+	timeSinceSoundPlayed = 0;
 }
 
 void Player::changeState(PlayerState nextState) {
@@ -238,6 +244,7 @@ bool inputToOppositeDirection(bool facingLeft) {
 
 void Player::update(int deltaTime)
 {
+	timeSinceSoundPlayed += deltaTime;
 	bool endJump = false;
 	switch (currentState)
 	{
@@ -271,6 +278,10 @@ void Player::update(int deltaTime)
 	case STATE_START_WALKING:
 		break;
 	case STATE_RUNNING:
+		if (timeSinceSoundPlayed > SOUND_TIME_FOOTSTEP) {
+			PlaySound(TEXT("sounds\\footstep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			timeSinceSoundPlayed = 0;
+		}
 		if (sprite->isAtEndingKeyframe()) {
 			if (!inputToCurrentDirection(sprite->isFacingLeft))
 			{
@@ -387,6 +398,7 @@ void Player::update(int deltaTime)
 		posPlayer.y += FALL_STEP;
 		if (map->collisionMoveDown(posPlayer, glm::ivec2(PLAYER_SIZE_X, PLAYER_SIZE_Y), &posPlayer.y))
 		{
+			PlaySound(TEXT("sounds\\land-soft.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			changeState(STATE_START_CROUCHING);
 		}
 		break;

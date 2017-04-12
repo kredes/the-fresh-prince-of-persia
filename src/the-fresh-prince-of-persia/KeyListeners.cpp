@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "KeyListeners.h"
 #include <iostream>
+#include <Windows.h>
 
 
 /* PlayingSceneKeyListener */
@@ -56,6 +57,7 @@ void InstructionsSceneKeyListener::onSpecialKeyReleased(Scene *scene, int key) {
 void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 	if (key == 32) { // Space
 		std::cout << "Enter key pressed" << endl;
+		PlaySound(NULL, 0 , 0);
 			
 		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 

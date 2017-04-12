@@ -2,6 +2,8 @@
 #include <GL/glut.h>
 #include "Game.h"
 #include "KeyListeners.h"
+#include <Windows.h>
+#include <mmsystem.h>
 
 void Game::init()
 {
@@ -25,6 +27,9 @@ void Game::init()
 
 	scene->init(map, NULL, text, NULL);
 	scene->setKeyListener(new TitleSceneKeyListener());
+
+	PlaySound(TEXT("songs\\main-theme.wav"), NULL, SND_FILENAME | SND_ASYNC);
+
 }
 
 bool Game::update(int deltaTime)

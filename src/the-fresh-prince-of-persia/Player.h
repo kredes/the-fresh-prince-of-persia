@@ -39,6 +39,7 @@ private:
 	bool isMoving;
 	int movementDir;
 	int initMovementPos;
+	float timeSinceSoundPlayed;
 
 	enum PlayerState
 	{
