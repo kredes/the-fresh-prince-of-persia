@@ -121,13 +121,13 @@ void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 		TextMap *text = new TextMap();
 		text->init(glm::vec2(SCREEN_WIDTH, SCREEN_HEIGHT), glm::vec2(SCREEN_X, SCREEN_Y), scene->texProgram);
 		
-		text->addText(1, "CREDITS", TextMap::Alignment::CENTER);
-		text->addText(2, "-----------", TextMap::Alignment::CENTER);
-		text->addText(4, "Victor Alcázar", TextMap::Alignment::CENTER);
-		text->addText(5, "&", TextMap::Alignment::CENTER);
-		text->addText(6, "Andrés Insaurralde", TextMap::Alignment::CENTER);
-		text->addText(8, "Videogames. FIB.", TextMap::Alignment::CENTER);
-		text->addText(9, "Q2 2017", TextMap::Alignment::CENTER);
+		text->addText(3, "CREDITS", TextMap::Alignment::CENTER);
+		text->addText(4, "-----------", TextMap::Alignment::CENTER);
+		text->addText(6, "Victor Alcázar", TextMap::Alignment::CENTER);
+		text->addText(7, "&", TextMap::Alignment::CENTER);
+		text->addText(8, "Andrés Insaurralde", TextMap::Alignment::CENTER);
+		text->addText(9, "Videogames. FIB.", TextMap::Alignment::CENTER);
+		text->addText(10, "Q2 2017", TextMap::Alignment::CENTER);
 		text->addText(21, "b: Back", TextMap::Alignment::LEFT);
 
 		newScene->init(map, NULL, text, NULL);
