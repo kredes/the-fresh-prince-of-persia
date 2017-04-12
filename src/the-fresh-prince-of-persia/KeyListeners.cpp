@@ -54,16 +54,15 @@ void InstructionsSceneKeyListener::onSpecialKeyReleased(Scene *scene, int key) {
 
 /* TitleSceneKeyListener */
 void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
-	if (key == 32) { // Space
-		std::cout << "Enter key pressed" << endl;
-			
+	if (key == 32) { // Space			
 		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
 		Scene *newScene = new Scene();
 		newScene->initShaders();
 
 		TileMap *map = new TileMap();
-		map->init("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), newScene->texProgram);
+		//map->init("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), newScene->texProgram);
+		map->init("levels/trivial.txt", glm::vec2(SCREEN_X, -378), newScene->texProgram);
 
 		UserInterface * ui = new UserInterface();
 		ui->init(newScene->texProgram, SCREEN_WIDTH, SCREEN_HEIGHT, INIT_PLAYER_HEALTH);
@@ -95,15 +94,15 @@ void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 		TextMap *text = new TextMap();
 		text->init(glm::vec2(SCREEN_WIDTH, SCREEN_HEIGHT), glm::vec2(SCREEN_X, SCREEN_Y), scene->texProgram);
 
-		text->addText(1, "INSTRUCTIONS", TextMap::Alignment::CENTER);
-		text->addText(2, "----------------", TextMap::Alignment::CENTER);
-		text->addText(4, "Left arrow: Move left", TextMap::Alignment::CENTER);
-		text->addText(5, "Right arrow: Move right", TextMap::Alignment::CENTER);
-		text->addText(6, "Up arrow: Jump", TextMap::Alignment::CENTER);
-		text->addText(7, "Down arrow: Crouch", TextMap::Alignment::CENTER);
-		text->addText(8, "F1 + Left: Walk left", TextMap::Alignment::CENTER);
-		text->addText(9, "F1 + Right: Walk right", TextMap::Alignment::CENTER);
-		text->addText(10, "r: Restart", TextMap::Alignment::CENTER);
+		text->addText(3, "INSTRUCTIONS", TextMap::Alignment::CENTER);
+		text->addText(4, "----------------", TextMap::Alignment::CENTER);
+		text->addText(6, "Left arrow: Move left", TextMap::Alignment::CENTER);
+		text->addText(7, "Right arrow: Move right", TextMap::Alignment::CENTER);
+		text->addText(8, "Up arrow: Jump", TextMap::Alignment::CENTER);
+		text->addText(9, "Down arrow: Crouch", TextMap::Alignment::CENTER);
+		text->addText(10, "F1 + Left: Walk left", TextMap::Alignment::CENTER);
+		text->addText(11, "F1 + Right: Walk right", TextMap::Alignment::CENTER);
+		text->addText(12, "r: Restart", TextMap::Alignment::CENTER);
 		text->addText(21, "b: Back", TextMap::Alignment::LEFT);
 
 		newScene->init(map, NULL, text, NULL);
