@@ -214,7 +214,7 @@ bool isCollisionTile(int tileType, int layer) {
 	switch (layer) {
 	case LAYER_FLOOR:
 	case LAYER_WALL:
-		return tileType > 0;
+		return tileType > 0 && tileType <= 25;	// Hardcoded magic
 	case LAYER_WALL_DEPTH:
 		return tileType > 0 && tileType == 24;
 	case LAYER_BACKGROUND:
@@ -295,7 +295,7 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 		const vector<int> &layer = map[k];
 		tile = layer[y*mapSize.x + x];
 		if (isCollisionTile(tile, k)) {
-			//cout << "Down collision on layer " << layerName(k) << " with tile " << tile << endl;
+			cout << "Down collision on layer " << layerName(k) << " with tile " << tile << endl;
 			return true;
 		}
 	}

@@ -62,7 +62,7 @@ void TitleSceneKeyListener::onKeyPressed(Scene *scene, int key) {
 
 		TileMap *map = new TileMap();
 		//map->init("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), newScene->texProgram);
-		map->init("levels/trivial.txt", glm::vec2(SCREEN_X, -378), newScene->texProgram);
+		map->init("levels/trivial.txt", glm::vec2(SCREEN_X, SCREEN_Y), newScene->texProgram);
 
 		UserInterface * ui = new UserInterface();
 		ui->init(newScene->texProgram, SCREEN_WIDTH, SCREEN_HEIGHT, INIT_PLAYER_HEALTH);
